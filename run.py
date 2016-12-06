@@ -1,9 +1,10 @@
-import discord, asyncio, sys, os, shelve, time, random
+import discord, asyncio, sys, os, shelve, time, random, tasks, types
 from commands import Main
 client = discord.Client()
 
 LOOP = asyncio.get_event_loop()
 INPUT = sys.argv[1:]
+max_msg_size = 1500
 
 class Store:
     def __init__(self):
@@ -14,14 +15,14 @@ class Store:
 async def on_message(message):
     if STORE.init_flag:
         STORE.messages.append(message)
-    if message.content.lstrip().startswith(MAIN.config['command_char']): #removes leading spaces and checks that the message begins with the command character
+    elif message.content.lstrip().startswith(MAIN.config['command_char']): #removes leading spaces and checks that the message begins with the command character
         MAIN.message_parser(message)
     
 @client.event
 async def on_message_edit(old, message):
     if STORE.init_flag:
         STORE.messages.append(message)
-    if message.content.lstrip().startswith(MAIN.config['command_char']):
+    elif message.content.lstrip().startswith(MAIN.config['command_char']):
         MAIN.message_parser(message, True)
 
 @client.event
@@ -31,25 +32,47 @@ async def on_ready():
     print(client.user.id)
     print('-----')
 
-async def main_loop(main):
+async def send_message(channel_str, message_str):
+    if not message_str:
+        return
+    if len(message_str) > max_msg_size:
+        stripped = message_str.strip()
+        boxed = stripped.startswith('```') and stripped.endswith('```')
+        split_pos = message_str.rfind('\n',0,max_msg_size)
+        if split_pos < 0:
+            split_pos = max_msg_size
+        message_head = message_str[:split_pos]
+        message_tail = message_str[split_pos:]
+        if boxed:
+            message_head += '```'
+            message_tail = '```' + message_tail
+        await really_send_message(channel_str, message_head)
+        await send_message(channel_str, message_tail)
+    else:
+        await really_send_message(channel_str, message_str)
+
+async def really_send_message(channel_str, message_str):
+    return await client.send_message(channel_str, message_str)
+
+async def main_loop(main, loop):
     await asyncio.sleep(1)
     await client.send_message(main.config['hub'], 'I have restarted')
+    [loop.create_task(getattr(tasks, a)(main)) for a in dir(tasks) if isinstance(getattr(tasks, a), types.FunctionType)]
     while not client.is_closed:
         main.message_handler()
         for message in main.out_messages:
-            await client.send_message(message[0], message[1])
+            await send_message(message[0], message[1])
             main.out_messages.pop(0)
         await asyncio.sleep(1)
 
 async def initialise():
     await asyncio.sleep(5)
-    config = shelve.open('Configs/config-MASTER')
-    config.clear()
+    config = open('Configs/config-MASTER', 'w')
     while True:
         char = input('What character will you be using as a command character?: ')
         ans = input('Are you sure you want to use "'+char+'" as your command character? (yes/y): ')
         if ans.lower() == 'yes' or ans.lower() == 'y':
-            config['command_char'] = char
+            config.write('command_char = '+char)
             break
 
     num = random.randint(1,1000000000)
@@ -88,7 +111,7 @@ if __name__ == '__main__':
         STORE.init_flag = True
         LOOP.create_task(initialise())
     else:
-        LOOP.create_task(main_loop(MAIN))
+        LOOP.create_task(main_loop(MAIN, LOOP))
 
     LOOP.run_until_complete(client.run(token))
     LOOP.run_until_complete(client.connect())

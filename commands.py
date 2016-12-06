@@ -1,3 +1,4 @@
+import asyncio
 class Main:
     def __init__(self, shelve):
         self.config = shelve.open('Configs/config-MASTER')
@@ -11,16 +12,20 @@ class Main:
 
     def message_handler(self):
         for content, message in self.in_messages:
+            self.in_messages.pop(0)
             if 'handle_'+content[0].lower() in dir(self):
                 print('Processed message: ', message.content, message.channel)
                 if message.channel == self.config['hub']:
                     getattr(self, 'handle_'+content[0].lower())(content, message)
 
-                self.in_messages.pop(0)
 
     def message_printer(self, message, channel):
+        if channel == 'hub':
+            channel = self.config['hub']
         self.out_messages.append([channel, message])
 
     def handle_confirm(self, content, message):
         self.message_printer('**I live**', message.channel)
 
+    def runtime_commands(self): #commands which will run through every second
+        pass
