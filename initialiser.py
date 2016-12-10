@@ -1,4 +1,4 @@
-import os, re
+import os, re, configparser, asyncio, sys, random, copy
 
 class ConfigInitialiser:
     def config_finder(self, exceptions):
@@ -10,46 +10,43 @@ class ConfigInitialiser:
                     accepted_files.append(("Configs/"+ini))
         return accepted_files
 
-    def equal_splicer(self, text):
-        return_dict = {}
-        current_key = None
-        cumilative_list = []
-        for line in text:
-            split = line.split('=')
-            if len(split)>1:
-                if current_key:
-                    return_dict[current_key] = (' '.join(cumilative_list)).strip()
-                current_key = split[0]
-                cumilative_list = [split[1]]
-            else:
-                cumilative_list.append(line)
-        return_dict[current_key] = (' '.join(cumilative_list)).strip()
-        return return_dict
-        
+    def initialise(self, client):
+        self.text_config = configparser.ConfigParser()
+        self.text_config.read('Config.ini')
+        self.config = {}
+        self.config['Main'] = {'command_char':self.text_config['Main']['command_char']}
+        self.config['Main']['hub'] = [server.get_channel(self.text_config['Main']['hub_channel']) for server in client.servers if server.id == self.text_config['Main']['hub_server']][0]
+        self.init_flag = False
 
-    def server_config_reader(self, ini):
-        #try:
-           # server = int(ini.readline().split('=')[1])
-        ini_list = []
-        line = (open(ini).read().split('\n'))
-        print(self.equal_splicer(line))
-        for line in zip(ini_list, ini_list[1:]):
-           print('value_set',x, y, '\n')
-        #except:
-        #    print('Incorrectly formatted ini, omitting... please check template')
-
-    def main_reader(self, ini):
-        config = {x:y for x, y in [z.split(':') for z in open(ini).read().strip().split('\n') if z.contains(':')]}
-        return config
-
-    def reader(self, *exceptions):
-        self.configs = {}
-        for ini in self.config_finder(exceptions):
-            print('Reading ini file: '+ini)
-            if ini.startswith('MAIN'):
-                self.main_config = self.main_reader(ini)
-            else:
-                self.server_config_reader(ini)
+    async def config_initialise(self):
+        await asyncio.sleep(5)
+        config = configparser.ConfigParser()
+        config['Main'] = {}
+        while True:
+            char = input('What character will you be using as a command character?: ')
+            ans = input('Are you sure you want to use "'+char+'" as your command character? (yes/y): ')
+            if ans.lower() == 'yes' or ans.lower() == 'y':
+                config['Main'].update({'command_char':char})
+                break
+    
+        num = random.randint(1,1000000000)
+        print('Please type',num,'into the channel that will be your hub channel (note that you must authorise your bot in the server first)')
+        found = False
+        while not found:
+            await asyncio.sleep(1)
+            for message in self.in_messages:
+                if message.content == str(num):
+                    config['Main'].update({'hub_server':str(message.server.id)})
+                    config['Main'].update({'hub_channel':str(message.channel.id)})
+                    ans = input('hub channel set to '+message.channel.name+', please confirm your choice (yes/y): ')
+                    if ans.lower() == 'yes' or ans.lower() == 'y':
+                        found = True
+                self.in_messages.pop(0)
+    
+        print('init process completed')
+        self.init_flag = False
+        with open('Config.ini', 'w') as configfile:
+            config.write(configfile)
 
 if __name__ == "__main__":
     init = ConfigInitialiser()
