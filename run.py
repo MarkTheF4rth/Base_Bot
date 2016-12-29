@@ -47,7 +47,8 @@ async def main_loop(main, loop):
     while main.init_flag or not client.is_logged_in:
         await asyncio.sleep(1)
     main.initialise(client)
-    await client.send_message(main.config['Main']['hub'], 'I have restarted')
+    if main.hub_channel:
+        await client.send_message(main.hub_channel, 'I have restarted')
     [loop.create_task(getattr(tasks, a)(main)) for a in dir(tasks) if isinstance(getattr(tasks, a), types.FunctionType)]
     while not client.is_closed:
         main.command_handler()
@@ -65,7 +66,9 @@ if __name__ == '__main__':
     token = open('token.txt').readlines()[0].strip()
 
     MAIN.init_flag = True
-    if not os.path.isfile('Config.ini'):
+    if not os.path.isdir('Configs'):
+        os.makedirs('Configs')
+    if not os.path.isfile('Configs/MASTER-Config.ini'):
         print('Master config file not present, running initialiser')
         LOOP.create_task(MAIN.config_initialise())
     elif len(INPUT) == 1 and (INPUT[0] == 'init' or INPUT[0] == 'initialise'):
