@@ -1,9 +1,35 @@
 import os, re, configparser, asyncio, sys, random, copy
+from collections import OrderedDict
+
+class Command_List:
+    def __init__(self):
+        self.command_names = []
+        self.commands = []
+        self.command_pairs = []
+
+    def add_command(self, command_name, command):
+        setattr(self, command_name, command)
+        command = getattr(self, command_name)
+        self.command_names.append(command_name)
+        self.commands.append(command)
+        self.command_pairs.append((command_name, command))
+        
+    def __iter__(self):
+        return (x for x in self.command_names)
+
+    def next(self):
+        try:
+            yield
+        except:
+            raise StopIteration
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 class Command:
     def __init__(self, alias_of=False):
         self.alias_of = alias_of
-        self.help_message = None
+        self.aliases = []
         self.roles = []
 
     def add_role(self, role, help_message):
@@ -24,14 +50,14 @@ class ConfigInitialiser:
         return accepted_files
 
     def initialise(self, client):
-        self.config = configparser.ConfigParser()
+        self.config = configparser.ConfigParser(dict_type=OrderedDict)
         self.channels = {}
         self.config.read('Configs/MASTER-Config.ini')
         self.hub_channel = [server.get_channel(self.config['Main']['hub_channel']) for server in client.servers if server.id == self.config['Main']['hub_server']][0]
         self.init_flag = False
         for config in os.listdir('Configs'):
             if config.endswith('.ini') and 'MASTER' not in config:
-                server_config = configparser.ConfigParser()
+                server_config = configparser.ConfigParser(dict_type=OrderedDict)
                 server_config.read(('Configs/'+config))
                 new_server_config = self.ini_format(server_config, client)
                 self.channels.update(new_server_config)
@@ -39,7 +65,7 @@ class ConfigInitialiser:
     def ini_format(self, ini, client):
         return_dict = {}
         if ini['Main']['enabled channels'] == 'all':
-            perm_format = self.permition_format(ini['Permitions'], ini['Tiers'], ini['Aliases'])
+            perm_format = self.permition_format(ini['Default Permitions'], ini['Tiers'], ini['Aliases'])
             for channel in client.get_server(ini['Main']['server id']).channels:
                 return_dict.update({channel.id:perm_format})
         else:
@@ -49,32 +75,30 @@ class ConfigInitialiser:
 
 
     def permition_format(self, channel, tiers, aliases):
-        return_dict = {}
+        command_list = Command_List()
         for command, command_config in channel.items():
-            return_dict[command] = Command()
-
+            current_command = Command()
             command_config = command_config.split('\n')
-            help_message = command_config[0].strip()
-            if help_message:
-                return_dict[command].help_message = help_message
-                return_dict[command].roles.append('@everyone')
 
-            if len(command_config) > 1:
-                for string in command_config[1:]:
+            for string in command_config:
+                if string.strip():
                     option, value = string.split(':')
                     option = option.strip()
                     if option != 'alias':
                         if option in tiers: 
                             for role in tiers[option].split(','):
-                                return_dict[command].add_role(role.strip(), value)
+                                    current_command.add_role(role.strip(), value)
                         else:
-                            return_dict[command].add_role(option, value)
+                            current_command.add_role(option, value)
                     else:
                         alias = Command(command)
-                        alias.roles = return_dict[command].roles
-                        return_dict[value.strip()] = alias
+                        alias.roles = current_command.roles
+                        command_list.add_command(value.strip(), alias)
+                        current_command.aliases.append(value.strip())
 
-        return return_dict
+            command_list.add_command(command, current_command)
+
+        return command_list
 
 
     async def config_initialise(self):

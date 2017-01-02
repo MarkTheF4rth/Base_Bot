@@ -32,30 +32,34 @@ class Main(initialiser.ConfigInitialiser):
                             getattr(self, 'handle_'+content[0].lower())(content, message)
                         break
 
-    def message_printer(self, message, channel):
+    def auth_verify(self, user, command):
+        pass
+
+    def message_printer(self, message, channel, header='', msg_break=''):
         if channel == 'hub':
             channel = self.hub_channel
-        self.out_messages.append([channel, message])
+        self.out_messages.append([channel, message, header, msg_break])
 
     def handle_help(self, content, message):
         command_list = {}
-        for command, help_dict in self.channels[message.channel.id].items():
-            help_dict = help_dict['help']
-            if type(help_dict) == str:
-                command_list[command] = help_dict
-            else:
-                for pair in help_dict:
-                    print(pair)
-                    role, help_message = [(x, y) for x, y in pair.items()][0]
-                    if role in [x.name for x in message.author.roles]:
-                        command_list[command] = help_message
-
         output = []
-        for command, help_message in command_list.items():
-            formatted_command = command+', '+', '.join(self.channels[message.channel.id][command]['aliases'])
-            output.append('**'+formatted_command+'** : '+help_message)
+        header = ['__**A list and brief description of each command you can use:**__']
+        msg_break = '**Continued...**'
+        lengths = []
 
-        self.message_printer('\n'.join(output), message.channel)
+        for command_name, command in self.channels[message.channel.id].command_pairs:
+            aliases = []
+            for role in command.roles:
+                if role in [x.name for x in message.author.roles]:
+                    if not command.alias_of and getattr(command, role):
+                        if command.aliases:
+                            command_name = command_name + '/' + '/'.join(command.aliases)
+                        output.append((command_name, getattr(command, role)))
+                        lengths.append(len(command_name))
+
+        command_length = max(lengths)
+        final_message = header+['**`{:<{length}} :`** {}'.format(x, y, length=command_length) for x, y in output]
+        self.message_printer('\n'.join(final_message), message.channel, msg_break=msg_break)
 
     def handle_confirm(self, content, message):
         self.message_printer('**I live**', message.channel)
