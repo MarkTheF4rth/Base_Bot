@@ -20,7 +20,7 @@ class Main(initialiser.ConfigInitialiser):
     def command_handler(self):
         for content, message in self.in_messages:
             self.in_messages.pop(0)
-            if content[0] in self.channels[message.channel.id]:
+            if message.channel.id in self.channels and content[0] in self.channels[message.channel.id]:
                 command = self.channels[message.channel.id][content[0]]
                 print('Processed message: ', message.content, message.channel)
                 for role in message.author.roles:

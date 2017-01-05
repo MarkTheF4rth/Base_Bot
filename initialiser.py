@@ -53,7 +53,7 @@ class ConfigInitialiser:
         self.config = configparser.ConfigParser(dict_type=OrderedDict)
         self.channels = {}
         self.config.read('Configs/MASTER-Config.ini')
-        self.hub_channel = [server.get_channel(self.config['Main']['hub_channel']) for server in client.servers if server.id == self.config['Main']['hub_server']][0]
+        self.hub_channel = client.get_server(self.config['Main']['hub_channel'])
         self.init_flag = False
         for config in os.listdir('Configs'):
             if config.endswith('.ini') and 'MASTER' not in config:
