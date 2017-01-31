@@ -60,12 +60,12 @@ class Main(initialiser.ConfigInitialiser):
                     if not command.alias_of and getattr(command, role):
                         if command.aliases:
                             command_name = command_name + '/' + '/'.join(command.aliases)
-                        print(command.flags)
                         if 'pm_help' in command.flags:
                             pm_output.append((command_name, getattr(command, role)))
                         else:
                             output.append((command_name, getattr(command, role)))
                         lengths.append(len(command_name))
+                        break
 
         command_length = max(lengths)
         if output:
