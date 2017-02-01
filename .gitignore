@@ -1,2 +1,4 @@
 __pycache__
 Configs/*
+.BaseStruct/.commands.py.swp
+token.txt
