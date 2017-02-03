@@ -11,19 +11,10 @@ class Context:
         self.message_content = []
 
 class Main(initialiser.ConfigInitialiser):
-    def __init__(self, shelve):
+    def __init__(self):
         self.in_messages = []
         self.out_messages = []
         self.init_flag = False
-        self.command_importer()
-
-    def command_importer(self):
-        for module_name in os.listdir('/home/ec2-user/BOTS/Base_Bot/CommandModules'):
-            if module_name.endswith('.py'):
-                module = importlib.import_module(module_name[:-3])
-                
-                for attr in dir(module):
-                    setattr(self, attr, getattr(module, attr))
 
     def message_handler(self, message, edit=False):
         if self.init_flag:
@@ -48,13 +39,16 @@ class Main(initialiser.ConfigInitialiser):
                     ctx.accepted_roles = accepted_roles
                     ctx.message_content = content
                     if command.alias_of:
-                        getattr(self, 'handle_'+command.alias_of)(self, message, ctx)
+                        getattr(self, 'handle_'+command.alias_of)(message, ctx)
                     else:
-                        getattr(self, 'handle_'+content[0].lower())(self, message, ctx)
+                        getattr(self, 'handle_'+content[0].lower())(message, ctx)
                     break
 
     def message_printer(self, message, channel, header='', msg_break=''):
         if channel == 'hub':
             channel = self.hub_channel
         self.out_messages.append([channel, message, header, msg_break])
+
+def command(func):
+    setattr(Main, "handle_"+func.__name__, func)
 

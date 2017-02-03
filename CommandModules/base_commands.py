@@ -1,6 +1,11 @@
-import asyncio
+import asyncio, sys
+sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/BaseStruct')
+from commands import command
 
-def handle_help(self, message, ctx): 
+live_message = "**I live**"
+
+@command
+def help(self, message, ctx): 
     command_list = {} 
     output = [] 
     pm_output = [] 
@@ -8,7 +13,7 @@ def handle_help(self, message, ctx):
     msg_break = '**Continued...**' 
     lengths = [] 
  
-    for command_name, command in self.channels[message.channel.id].command_pairs: 
+    for command_name, command in commands.channels[message.channel.id].command_pairs: 
         aliases = [] 
         for role in command.roles: 
             if role in [x.name for x in message.author.roles]: 
@@ -32,5 +37,6 @@ def handle_help(self, message, ctx):
         final_message_pm = header+['**`{:<{length}} :`** {}'.format(x, y, length=command_length) for x, y in pm_output] 
         self.message_printer('\n'.join(final_message_pm), message.author, msg_break=msg_break) 
 
-def handle_confirm(self, message, ctx): 
-    self.message_printer('**I live**', message.channel)
+@command
+def confirm(self, message, ctx): 
+    self.message_printer(live_message, message.channel)

@@ -1,4 +1,4 @@
-import discord, asyncio, sys, os, shelve, random, types
+import discord, asyncio, sys, os, shelve, random, types, importlib
 
 sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/BaseStruct')
 from addeventlisteners import addListeners
@@ -6,12 +6,18 @@ from commands import Main
 from message_sender import send_message
 
 client = discord.Client()
-MAIN = Main(shelve)
-addListeners(client, MAIN)
+Main = Main()
+addListeners(client, Main)
+
+os.system('python3.5 CommandModules/header.py')
 
 LOOP = asyncio.get_event_loop()
 INPUT = sys.argv[1:]
 
+def importer():
+    for module_name in os.listdir('CommandModules'):
+        if module_name.endswith('.py'):
+            module = importlib.import_module(module_name[:-3])
 
 async def main_loop(main, loop):
     while main.init_flag or not client.is_logged_in:
@@ -35,19 +41,21 @@ if __name__ == '__main__':
 
     token = open('token.txt').readlines()[0].strip()
 
-    MAIN.init_flag = True
+    Main.init_flag = True
     if not os.path.isdir('Configs'):
         os.makedirs('Configs')
     if not os.path.isfile('Configs/MASTER-Config.ini'):
         print('Master config file not present, running initialiser')
-        LOOP.create_task(MAIN.config_initialise())
+        LOOP.create_task(Main.config_initialise())
     elif len(INPUT) == 1 and (INPUT[0] == 'init' or INPUT[0] == 'initialise'):
         print('Running initialiser upon request')
-        LOOP.create_task(MAIN.config_initialise())
+        LOOP.create_task(Main.config_initialise())
     else:
-        MAIN.init_flag = False
+        Main.init_flag = False
 
-    LOOP.create_task(main_loop(MAIN, LOOP))
+    importer()
+
+    LOOP.create_task(main_loop(Main, LOOP))
 
     LOOP.run_until_complete(client.run(token))
     LOOP.run_until_complete(client.connect())
