@@ -1,6 +1,8 @@
 import discord, asyncio, sys, os, shelve, random, types, importlib
 
-sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/BaseStruct')
+sys.path.insert(0, os.getcwd()+'/BaseStruct')
+sys.path.insert(0, os.getcwd()+'/CommandModules')
+sys.path.insert(0, os.getcwd()+'/Tasks')
 from addeventlisteners import addListeners
 from commands import Main
 from message_sender import send_message
@@ -9,15 +11,15 @@ client = discord.Client()
 Main = Main()
 addListeners(client, Main)
 
-os.system('python3.5 CommandModules/header.py')
-
 LOOP = asyncio.get_event_loop()
 INPUT = sys.argv[1:]
 
-def importer():
-    for module_name in os.listdir('CommandModules'):
+def module_importer(module):
+    os.chdir(module)
+    for module_name in os.listdir():
         if module_name.endswith('.py'):
             module = importlib.import_module(module_name[:-3])
+    os.chdir('..')
 
 async def main_loop(main, loop):
     while main.init_flag or not client.is_logged_in:
@@ -25,7 +27,9 @@ async def main_loop(main, loop):
     main.initialise(client)
 #    if main.hub_channel:
 #        await client.send_message(main.hub_channel, 'I have restarted')
-    #[loop.create_task(getattr(tasks, a)(main)) for a in dir(tasks) if isinstance(getattr(tasks, a), types.FunctionType)]
+    for task in main.tasks:
+        loop.create_task(task(main))
+        #[loop.create_task(getattr(tasks, a)(main)) for a in dir(tasks) if isinstance(getattr(tasks, a), types.FunctionType)]
     while not client.is_closed:
         main.command_handler()
         for message in main.out_messages:
@@ -53,7 +57,8 @@ if __name__ == '__main__':
     else:
         Main.init_flag = False
 
-    importer()
+    module_importer('Tasks')
+    module_importer('CommandModules')
 
     LOOP.create_task(main_loop(Main, LOOP))
 

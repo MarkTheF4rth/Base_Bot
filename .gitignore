@@ -2,3 +2,5 @@ __pycache__
 Configs/*
 .BaseStruct/.commands.py.swp
 token.txt
+.run.py.swp
+CommandModules/.base_commands.py.swp

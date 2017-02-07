@@ -1,8 +1,6 @@
 import asyncio, sys
-sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/BaseStruct')
+#sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/BaseStruct')
 from commands import command
-
-live_message = "**I live**"
 
 @command
 def help(self, message, ctx): 
@@ -39,4 +37,4 @@ def help(self, message, ctx):
 
 @command
 def confirm(self, message, ctx): 
-    self.message_printer(live_message, message.channel)
+    self.message_printer("**I live**", message.channel)

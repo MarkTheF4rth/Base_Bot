@@ -3,7 +3,6 @@ import initialiser
 import importlib
 import os
 import sys
-sys.path.insert(0, '/home/ec2-user/BOTS/Base_Bot/CommandModules')
 
 class Context:
     def __init__(self):
@@ -12,6 +11,7 @@ class Context:
 
 class Main(initialiser.ConfigInitialiser):
     def __init__(self):
+        self.tasks = []
         self.in_messages = []
         self.out_messages = []
         self.init_flag = False
@@ -39,9 +39,9 @@ class Main(initialiser.ConfigInitialiser):
                     ctx.accepted_roles = accepted_roles
                     ctx.message_content = content
                     if command.alias_of:
-                        getattr(self, 'handle_'+command.alias_of)(message, ctx)
+                        getattr(self, 'botcommand_'+command.alias_of)(message, ctx)
                     else:
-                        getattr(self, 'handle_'+content[0].lower())(message, ctx)
+                        getattr(self, 'botcommand_'+content[0].lower())(message, ctx)
                     break
 
     def message_printer(self, message, channel, header='', msg_break=''):
@@ -50,5 +50,7 @@ class Main(initialiser.ConfigInitialiser):
         self.out_messages.append([channel, message, header, msg_break])
 
 def command(func):
-    setattr(Main, "handle_"+func.__name__, func)
+    setattr(Main, "botcommand_"+func.__name__, func)
 
+def task(func):
+    Main.tasks.append(func)
