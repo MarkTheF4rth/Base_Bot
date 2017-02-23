@@ -1,6 +1,6 @@
-def listen(client, message_handler):
+def listen(client, main):
 
     @client.event
     async def on_message_edit(old, message):
-        message_handler(message)
+        main.message_handler(message)
 

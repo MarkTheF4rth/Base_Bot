@@ -1,6 +1,10 @@
 import asyncio
+import time
+from commands import task
 
-async def task(main):
+@task
+async def task(self):
+    print('running')
     while True:
-        main.message_printer('I am still here', main.hub_channel)
-        asyncio.sleep(1)
+        print(self.all_in_messages)
+        await asyncio.sleep(1)

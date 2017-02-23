@@ -8,4 +8,4 @@ def addListeners(client, MAIN):
     for toImport in __all__:
         moduleToImport = 'BaseStruct.Listeners.' + toImport
         listener = importlib.import_module(moduleToImport)
-        listener.listen(client, MAIN.message_handler)
+        listener.listen(client, MAIN)

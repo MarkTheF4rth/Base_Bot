@@ -1,4 +1,4 @@
-def listen(client, message_handler):
+def listen(client, main):
 
     @client.event
     async def on_ready(): 
@@ -6,3 +6,4 @@ def listen(client, message_handler):
         print(client.user.name) 
         print(client.user.id) 
         print('-----')
+        main.connected = True
