@@ -1,7 +1,7 @@
 import os, re, configparser, asyncio, sys, random, copy
 from addeventlisteners import addListeners
 from collections import OrderedDict
-from commands import Main
+from bot import Main
 from StorageClasses import commandConfig
 
 COMMAND_DICT = {}
@@ -49,19 +49,24 @@ class Config_Creator:
             command_config = command_config.split('\n')
 
             for string in command_config:
-                if string.strip():
+                split_text = re.match(r'(\w+): ([^:]+)', string)
+                if split_text:
 
-                    split_text = re.split(r'[^\\]\|',string)
-                    current_command.set_flags(split_text[2])
-                    descriptor = split_text[0].strip()
+                    key, value = split_text.groups()
+                    
+                    if key == 'ROLE':
+                        for option in value.split(','):
+                            option = option.strip()
+                            if option in tiers: 
+                                for role in tiers[option].split(','):
+                                    current_command.add_role(role.strip())
+                            else:
+                                current_command.add_role(option)
 
-                    for option in split_text[1].split(','):
-                        option = option.strip()
-                        if option in tiers: 
-                            for role in tiers[option].split(','):
-                                current_command.add_role(role.strip(), split_text[3])
-                        else:
-                            current_command.add_role(option, split_text[3])
+
+                    elif key == 'FLAGS':
+                        current_command.set_flags(value)
+
                             
             for alias in current_command.aliases: 
                 command_dict.update({alias:current_command})

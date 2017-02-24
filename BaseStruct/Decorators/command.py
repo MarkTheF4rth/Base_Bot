@@ -5,8 +5,7 @@ def command(aliases=[], description=None):
         '''Stores information about a specific command'''
         def __init__(self, function):
             add_command({function.__name__:self})
-            self.aliases = aliases+[function.__name__]
-
+            self.aliases = [function.__name__] + aliases
             self.context = None
             self.description = description
             self.roles = []
@@ -14,8 +13,8 @@ def command(aliases=[], description=None):
     
             self.run = function
 
-        def add_role(self, role, help_message):
-            setattr(self, role, help_message)
+        def add_role(self, role):
+            setattr(self, role, self.description)
             self.roles.append(role)
 
         def set_flags(self, string):
