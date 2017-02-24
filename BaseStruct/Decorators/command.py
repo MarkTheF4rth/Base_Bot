@@ -8,14 +8,16 @@ def command(aliases=[], description=None):
             self.aliases = [function.__name__] + aliases
             self.context = None
             self.description = description
-            self.roles = []
+            self.roles = {}
             self.flags = []
     
             self.run = function
 
-        def add_role(self, role):
-            setattr(self, role, self.description)
-            self.roles.append(role)
+        def add_role(self, role, channel):
+            if channel not in self.roles:
+                self.roles[channel] = [role]
+            else:
+                self.roles[channel].append(role)
 
         def set_flags(self, string):
             self.flags = string.split()

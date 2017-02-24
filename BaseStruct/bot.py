@@ -32,7 +32,7 @@ class Main(object):
             if message.channel.id in self.commands.command_tree and content[0] in self.commands[message.channel.id]:
                 command = self.commands[message.channel.id][content[0]]
                 print('Processed message: ', message.content, message.channel)
-                accepted_roles = set([role.name for role in message.author.roles]) & set(command.roles)
+                accepted_roles = set([role.name for role in message.author.roles]) & set(command.roles[message.channel.id])
                 if accepted_roles:
                     ctx = context.Context()
                     ctx.accepted_roles = accepted_roles

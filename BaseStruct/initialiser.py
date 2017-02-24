@@ -59,9 +59,9 @@ class Config_Creator:
                             option = option.strip()
                             if option in tiers: 
                                 for role in tiers[option].split(','):
-                                    current_command.add_role(role.strip())
+                                    current_command.add_role(role.strip(), channel)
                             else:
-                                current_command.add_role(option)
+                                current_command.add_role(option, channel)
 
 
                     elif key == 'FLAGS':
