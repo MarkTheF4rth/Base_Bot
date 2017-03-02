@@ -1,4 +1,5 @@
 from command import command
+from extendinit import init
 
 @command(description='Displays this message')
 def help(self, message, ctx): 
@@ -34,5 +35,8 @@ def help(self, message, ctx):
 
 @command(aliases=['c'], description='Confirms the bot is still alive')
 def confirm(self, message, ctx): 
-    self.message_printer("**I live**", message.channel)
+    self.message_printer(self.livemessage, message.channel)
 
+@init()
+def addattr(self):
+    self.livemessage = '**I live**'

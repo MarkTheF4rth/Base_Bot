@@ -6,6 +6,7 @@ from StorageClasses import commandConfig
 
 COMMAND_DICT = {}
 TASK_DICT = {}
+INIT_DICT = {}
 
 class Config_Creator:
     def __init__(self, client):
@@ -87,6 +88,10 @@ async def Master_Initialise(client, main_loop, thread_loop):
         await asyncio.sleep(1)
 
     main.set_config(Config_Creator(client))
+
+    for name, func in INIT_DICT.items():
+        func(main)
+        
     thread_loop.create_task(main_loop(main, thread_loop))
 
 def add_command(command):
@@ -94,3 +99,6 @@ def add_command(command):
 
 def add_task(task):
     TASK_DICT.update(task)
+
+def add_init(func):
+    INIT_DICT.update(func)
