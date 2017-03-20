@@ -1,6 +1,6 @@
 from initialiser import add_command
 
-def command(aliases=[], description=None):
+def command(arglen=-1, aliases=[], description=None):
     class command_struct(object):
         '''Stores information about a specific command'''
         def __init__(self, function):
@@ -10,6 +10,7 @@ def command(aliases=[], description=None):
             self.description = description
             self.roles = {}
             self.flags = []
+            self.arglen = arglen
     
             self.run = function
 
@@ -23,6 +24,14 @@ def command(aliases=[], description=None):
             self.flags = string.split()
             if 'ignore_alias' in self.flags:
                 self.alias_of = False
+
+        def valid_len(self, size):
+            size = size-1
+            if size == self.arglen or self.arglen == -1:
+                return True
+            if type(self.arglen) == list and size in self.arglen:
+                return True
+            return False
 
         def __call__(self, *args, **kwargs):
             self.run(*args, **kwargs)

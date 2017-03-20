@@ -31,6 +31,11 @@ class Main(object):
             self.in_messages.pop(0)
             if content[0] in self.commands[message.channel.id]:
                 command = self.commands[message.channel.id][content[0]]
+
+                if not command.valid_len(len(content)):
+                    self.message_printer('Please use a valid amount of arguments for this comand', message.channel)
+                    break
+
                 print('Processed message: ', message.content, message.channel)
                 accepted_roles = set([role.name for role in message.author.roles]+[message.author.id]) & set(command.roles[message.channel.id])
                 if accepted_roles:
