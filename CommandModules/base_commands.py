@@ -11,13 +11,13 @@ def help(self, message, ctx):
     lengths = [] 
  
     for command_name, command in self.commands.unique_command_tree[message.channel.id].items():
-        for role in command.roles: 
+        for role in command.roles[message.channel.id]: 
             if role in [x.name for x in message.author.roles]: 
                 command_name = '/'.join(command.aliases)
                 if 'pm_help' in command.flags: 
-                    pm_output.append((command_name, getattr(command, role))) 
+                    pm_output.append((command_name, command.description))
                 else: 
-                    output.append((command_name, getattr(command, role))) 
+                    output.append((command_name, command.description)) 
                 lengths.append(len(command_name)) 
                 break 
  

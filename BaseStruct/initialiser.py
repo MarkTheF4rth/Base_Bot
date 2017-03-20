@@ -1,4 +1,4 @@
-import os, re, configparser, asyncio, sys, random, copy
+import os, re, configparser, asyncio, sys, random, copy, discord
 from addeventlisteners import addListeners
 from collections import OrderedDict
 from bot import Main
@@ -7,6 +7,8 @@ from StorageClasses import commandConfig
 COMMAND_DICT = {}
 TASK_DICT = {}
 INIT_DICT = {}
+TRUE_CASE = ['True', 'true', '1', 'yes']
+FALSE_CASE = ['False', 'false', '0', 'no']
 
 class Config_Creator:
     def __init__(self, client):
@@ -20,28 +22,47 @@ class Config_Creator:
                 server_config.read(('Configs/'+config_file))
                 self.ini_format(server_config, client)
 
+        self.default_permition_format(client)
 
     def ini_format(self, ini, client):
-        if ini['Main']['enabled channels'] == 'all':
-            for channel in client.get_server(ini['Main']['server id']).channels:
-                channel.id, self.permition_format(channel.id, ini['Default Commands'], ini)
-        else:
-            for channel in ini['Main']['enabled channels'].split(','):
-                channel.strip(), self.permition_format(channel.strip(), ini[channel.strip()], ini)
+        print('Applying config formats to channels in {}'.format(client.get_server(ini['Main']['server id'])))
+        channels = {}
+        default_scope = ini['Main']['default channel scope'].strip()
+        if default_scope != 'none':
+            channels = {channel.id:default_scope for channel in client.get_server(ini['Main']['server id']).channels if channel.type != discord.ChannelType.voice}
+        channels.update(ini['Channel Config'])
 
+        for channel, scope in channels.items():
+            print('---{}'.format(client.get_channel(channel)))
+            if scope in ['master', 'global']:
+                self.permition_format(channel, self.raw_config['Default Commands'], roles=ini['Roles'])
 
-    def permition_format(self, channel, channel_config, ini):
-        command_dict = {}
-        unique_command_list = {}
-        tiers = []
+            if scope in ['global', 'local']:
+                self.permition_format(channel, ini['Default Commands'], roles=ini['Roles'])
 
-        if 'Tiers' in ini:
-            tiers = ini['Tiers']
+            if channel in ini:
+                self.permition_format(channel, ini[channel.id], roles=ini['Roles'])
 
-        for command_name, command_config in channel_config.items():
-            if command_name == 'clear defaults':
+    def default_permition_format(self, client):
+        for server_id in self.raw_config['Server Specific']['servers'].split(','):
+            server_id = server_id.strip()
+            server = client.get_server(server_id)
+
+            if not server:
+                print('server: \''+server_id+'\' not found... omitting')
                 continue
 
+            print('Applying default permitions to all valid channels in {}, ({})'.format(server_id, server.name))
+            for channel in server.channels:
+                if channel.type != discord.ChannelType.voice and channel.id not in self.command_config.command_tree:
+                    print('---{}'.format(channel.name))
+                    self.permition_format(channel.id, self.raw_config['Default Commands'])
+
+    def permition_format(self, channel, ini, roles=[]):
+        command_dict = {}
+        unique_command_list = {}
+
+        for command_name, command_config in ini.items():
             if command_name not in COMMAND_DICT:
                 print('Command: '+command+' not defined... omitting')
                 continue
@@ -53,28 +74,31 @@ class Config_Creator:
                 split_text = re.match(r'(\w+): ([^:]+)', string)
                 if split_text:
 
-                    key, value = split_text.groups()
+                    identifier, values = split_text.groups()
                     
-                    if key == 'ROLE':
-                        for option in value.split(','):
-                            option = option.strip()
-                            if option in tiers: 
-                                for role in tiers[option].split(','):
+                    if identifier == 'ROLE':
+                        for value in values.split(','):
+                            value = value.strip()
+                            if value in roles: 
+                                for role in roles[value].split(','):
                                     current_command.add_role(role.strip(), channel)
                             else:
-                                current_command.add_role(option, channel)
+                                current_command.add_role(value, channel)
 
-
-                    elif key == 'FLAGS':
-                        current_command.set_flags(value)
+                    elif identifier == 'FLAGS':
+                        current_command.set_flags(values)
 
                             
             for alias in current_command.aliases: 
                 command_dict.update({alias:current_command})
             unique_command_list.update({command_name:current_command})
 
-        self.command_config.command_tree.update({channel:command_dict})
-        self.command_config.unique_command_tree.update({channel:unique_command_list})
+        if channel in self.command_config.unique_command_tree:
+            self.command_config.command_tree[channel].update(command_dict)
+            self.command_config.unique_command_tree[channel].update(unique_command_list)
+        else:
+            self.command_config.command_tree.update({channel:command_dict})
+            self.command_config.unique_command_tree.update({channel:unique_command_list})
 
 
 async def Master_Initialise(client, main_loop, thread_loop):
