@@ -18,7 +18,7 @@ class Main(object):
         self.commands = config.command_config
 
     def message_handler(self, message, edit=False):
-        if message.content.lstrip().startswith(self.raw_config['Main']['command char']): #removes leading spaces and checks that the message begins with the command character
+        if message.channel.id in self.commands.command_tree and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
             self.message_parser(message, edit)
 
     def message_parser(self, message, edit):
@@ -29,10 +29,10 @@ class Main(object):
     def command_handler(self):
         for content, message in self.in_messages:
             self.in_messages.pop(0)
-            if message.channel.id in self.commands.command_tree and content[0] in self.commands[message.channel.id]:
+            if content[0] in self.commands[message.channel.id]:
                 command = self.commands[message.channel.id][content[0]]
                 print('Processed message: ', message.content, message.channel)
-                accepted_roles = set([role.name for role in message.author.roles]) & set(command.roles[message.channel.id])
+                accepted_roles = set([role.name for role in message.author.roles]+[message.author.id]) & set(command.roles[message.channel.id])
                 if accepted_roles:
                     ctx = context.Context()
                     ctx.accepted_roles = accepted_roles
