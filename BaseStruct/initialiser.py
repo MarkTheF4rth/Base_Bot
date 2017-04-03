@@ -6,7 +6,6 @@ from StorageClasses import commandConfig
 
 COMMAND_DICT = {}
 TASK_DICT = {}
-INIT_DICT = {}
 TRUE_CASE = ['True', 'true', '1', 'yes']
 FALSE_CASE = ['False', 'false', '0', 'no']
 
@@ -102,20 +101,29 @@ class Config_Creator:
 
 
 async def Master_Initialise(client, main_loop, thread_loop):
+    '''Runs all initialisation scripts in the correct order, 
+         running the main thread loop when it finishes'''
     main = Main(client)
-    addListeners(client, main) # Add listeners
 
     main.commands = COMMAND_DICT
-    main.tasks = TASK_DICT
+
+    print('='*10+'BEGINNING INIT'+'='*10)
+    print('Adding Listeners')
+    addListeners(client, main)
+    print('\n')
 
     while not main.connected:
         await asyncio.sleep(1)
 
-    main.set_config(Config_Creator(client))
 
-    for name, func in INIT_DICT.items():
-        func(main)
-        
+    main.set_config(Config_Creator(client))
+    print('\n')
+    main.resolve_tasks(TASK_DICT, thread_loop)
+    print('='*10+'INIT COMPLETED'+'='*10+'\n')
+    print('Logged in as')  
+    print(client.user.name)  
+    print(client.user.id)  
+    print('-----\n')
     thread_loop.create_task(main_loop(main, thread_loop))
 
 def add_command(command):
@@ -123,6 +131,3 @@ def add_command(command):
 
 def add_task(task):
     TASK_DICT.update(task)
-
-def add_init(func):
-    INIT_DICT.update(func)

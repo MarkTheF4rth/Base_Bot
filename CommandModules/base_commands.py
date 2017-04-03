@@ -1,5 +1,5 @@
 from command import command
-from extendinit import init
+from task import task
 
 @command(description='Displays this message')
 def help(self, message, ctx): 
@@ -33,10 +33,10 @@ def help(self, message, ctx):
         final_message_pm = header+['**`{:<{length}} :`** {}'.format(x, y, length=command_length) for x, y in pm_output] 
         self.message_printer('\n'.join(final_message_pm), message.author, msg_break=msg_break) 
 
-@command(aliases=['c'], description='Confirms the bot is still alive')
+@command(aliases=['c'], arglen=0, description='Confirms the bot is still alive')
 def confirm(self, message, ctx): 
     self.message_printer(self.livemessage, message.channel)
 
-@init()
+@task(run_time='init')
 def addattr(self):
     self.livemessage = '**I live**'

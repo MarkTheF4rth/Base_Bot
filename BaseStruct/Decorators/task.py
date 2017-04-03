@@ -1,13 +1,13 @@
 from initialiser import add_task
 
-def task(instant_run=False):
+def task(run_time='call'):
     class task:
         def __init__(self, function):
             add_task({function.__name__:self})
-            self.instant_run = instant_run
+            self.run_time = run_time
             self.run = function
 
-        def __call__(self, main):
+        async def __call__(self, main):
             self.run(main)
 
     return task

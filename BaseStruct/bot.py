@@ -12,10 +12,28 @@ class Main(object):
         self.out_messages = []
         self.connected = False
         self.client = client
+        self.commands = []
+        self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def set_config(self, config):
         self.raw_config = config.raw_config
         self.commands = config.command_config
+
+    def resolve_tasks(self, task_dict, thread_loop):
+        self.thread_loop = thread_loop
+        print('Resolving tasks:')
+        print('---Reading tasks:')
+        for name, task in task_dict.items():
+            if task.run_time in self.tasks:
+                self.tasks[task.run_time].update({name:task})
+                print('------{} resolved (run time = {})'.format(name, task.run_time))
+            else:
+                print('------WARNING {} could not be resolved, (run time {} not recognised) omitting...'.format(name, task.run_time))
+
+        print('---Initialising tasks:')
+        for name, task in self.tasks['init'].items():
+            thread_loop.create_task(task(self))
+            print('------{} initialised'.format(name))
 
     def message_handler(self, message, edit=False):
         if message.channel.id in self.commands.command_tree and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
@@ -24,6 +42,8 @@ class Main(object):
     def message_parser(self, message, edit):
         content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
         for item in content:
+            for task in self.tasks['onmessage']:
+                task(self)
             self.in_messages.append([item, message])
 
     def command_handler(self):

@@ -6,6 +6,7 @@ def addListeners(client, MAIN):
     __all__ = [basename(f)[:-3] for f in modules if isfile(f)]
 
     for toImport in __all__:
+        print('---Adding listener: {}'.format(toImport))
         moduleToImport = 'BaseStruct.Listeners.' + toImport
         listener = importlib.import_module(moduleToImport)
         listener.listen(client, MAIN)

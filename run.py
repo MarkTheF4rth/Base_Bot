@@ -8,10 +8,6 @@ from message_sender import send_message
 from initialiser import Master_Initialise
 
 async def main_loop(main, thread_loop):
-    for task_name, task in main.tasks.items():
-        if task.instant_run:
-            thread_loop.create_task(task.run(main))
-
     while not CLIENT.is_closed:
         main.command_handler()
         for message in main.out_messages:
