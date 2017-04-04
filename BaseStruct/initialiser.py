@@ -63,7 +63,7 @@ class Config_Creator:
 
         for command_name, command_config in ini.items():
             if command_name not in COMMAND_DICT:
-                print('Command: '+command+' not defined... omitting')
+                print('Command: '+command_name+' not defined... omitting')
                 continue
 
             current_command = COMMAND_DICT[command_name]
@@ -113,7 +113,9 @@ async def Master_Initialise(client, main_loop, thread_loop):
     print('\n')
 
     while not main.connected:
+        print('Connecting....')
         await asyncio.sleep(1)
+    print('\n')
 
 
     main.set_config(Config_Creator(client))

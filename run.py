@@ -15,6 +15,19 @@ async def main_loop(main, thread_loop):
             main.out_messages.pop(0)
         await asyncio.sleep(1)
 
+def import_libs():
+    os.chdir('CommandModules')
+    for lib in next(os.walk('.'))[1]:
+        if os.path.isdir(lib) and not lib.startswith('.') and not lib.startswith('_'):
+            os.chdir(lib)
+            for script in os.listdir():
+                if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
+                    sys.path.insert(0, os.getcwd())
+                    importlib.import_module(script.strip('.py'))
+                    importlib.invalidate_caches()
+            os.chdir('..')
+    os.chdir('..')
+
 def verify_bot():
     verified = True
     if not os.path.isfile('token.txt'):
@@ -36,7 +49,7 @@ if __name__ == '__main__':
     LOOP = asyncio.get_event_loop() # Create event loop for asyncio threads
     INPUT = sys.argv[1:] # Save command line input that does not include the filename
 
-    from CommandModules import * # Import modules
+    import_libs()# Import command module libraries
 
     token = open('token.txt').readlines()[0].strip() # Grab token from file
 
