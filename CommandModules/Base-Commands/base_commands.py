@@ -1,3 +1,4 @@
+import discord, asyncio
 from command import command
 from task import task
 
@@ -38,5 +39,6 @@ def confirm(self, message, ctx):
     self.message_printer(self.livemessage, message.channel)
 
 @task(run_time='init')
-def addattr(self):
+async def addattr(self):
     self.livemessage = '**I live**'
+

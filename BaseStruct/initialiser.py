@@ -100,6 +100,7 @@ class Config_Creator:
             self.command_config.unique_command_tree.update({channel:unique_command_list})
 
 
+
 async def Master_Initialise(client, main_loop, thread_loop):
     '''Runs all initialisation scripts in the correct order, 
          running the main thread loop when it finishes'''
@@ -120,13 +121,18 @@ async def Master_Initialise(client, main_loop, thread_loop):
 
     main.set_config(Config_Creator(client))
     print('\n')
+
+
     main.resolve_tasks(TASK_DICT, thread_loop)
     print('='*10+'INIT COMPLETED'+'='*10+'\n')
+    print('\n')
+
     print('Logged in as')  
     print(client.user.name)  
     print(client.user.id)  
     print('-----\n')
-    thread_loop.create_task(main_loop(main, thread_loop))
+
+    await thread_loop.create_task(main_loop(main, thread_loop))
 
 def add_command(command):
     COMMAND_DICT.update(command)

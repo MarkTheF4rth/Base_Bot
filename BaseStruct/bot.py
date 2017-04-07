@@ -24,6 +24,10 @@ class Main(object):
         print('Resolving tasks:')
         print('---Reading tasks:')
         for name, task in task_dict.items():
+            if not task.valid:
+                print('------WARNING {} could not be resolved, (function needs to be a coroutine) omitting...'.format(name))
+                continue
+
             if task.run_time in self.tasks:
                 self.tasks[task.run_time].update({name:task})
                 print('------{} resolved (run time = {})'.format(name, task.run_time))
