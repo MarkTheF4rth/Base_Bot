@@ -13,6 +13,9 @@ async def main_loop(main, thread_loop):
         for message in main.out_messages:
             await send_message(CLIENT, *message)
             main.out_messages.pop(0)
+
+        for task in main.pending_tasks:
+            await task[0](main, *task[1], **task[2])
         await asyncio.sleep(1)
 
 def import_libs():
@@ -27,6 +30,7 @@ def import_libs():
                     importlib.invalidate_caches()
             os.chdir('..')
     os.chdir('..')
+    print(os.getcwd())
 
 def verify_bot():
     verified = True
