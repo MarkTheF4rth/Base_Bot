@@ -15,6 +15,7 @@ class Main(object):
         self.client = client
         self.commands = []
         self.home_dir = os.getcwd()
+        self.data_dir = os.getcwd()+'/Data'
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def set_config(self, config):
