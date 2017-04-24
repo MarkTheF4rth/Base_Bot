@@ -4,3 +4,4 @@ Configs/*
 token.txt
 .run.py.swp
 CommandModules/.base_commands.py.swp
+CommandModules/
