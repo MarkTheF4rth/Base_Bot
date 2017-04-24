@@ -1,6 +1,7 @@
 import discord, asyncio
 from command import command
 from task import task
+from func import func
 
 @command(description='Displays this message')
 def help(self, message, ctx): 
@@ -36,9 +37,10 @@ def help(self, message, ctx):
 
 @command(aliases=['c'], arglen=0, description='Confirms the bot is still alive')
 def confirm(self, message, ctx): 
-    self.message_printer(self.livemessage, message.channel)
+    livemessage = self.addattr()
+    self.message_printer(livemessage, message.channel)
 
-@task(run_time='init')
-async def addattr(self):
-    self.livemessage = '**I live**'
+@func()
+def addattr(self):
+    return '**I live**'
 

@@ -4,13 +4,13 @@ from collections import OrderedDict
 from bot import Main
 from StorageClasses import commandConfig
 
-COMMAND_DICT = {}
-TASK_DICT = {}
+EXTENSION_DICT = {'task':{}, 'command':{}, 'func':{}}
 TRUE_CASE = ['True', 'true', '1', 'yes']
 FALSE_CASE = ['False', 'false', '0', 'no']
 
 class Config_Creator:
-    def __init__(self, client):
+    def __init__(self, client, extension_dict):
+        self.command_dict = extension_dict['command']
         self.raw_config = configparser.ConfigParser(dict_type=OrderedDict) #Raw Master Config
         self.raw_config.read('Configs/MASTER-Config.ini')
         self.command_config = commandConfig.Command_Config() #Config for all commands
@@ -40,7 +40,7 @@ class Config_Creator:
                 self.permition_format(channel, ini['Default Commands'], roles=ini['Roles'])
 
             if channel in ini:
-                self.permition_format(channel, ini[channel.id], roles=ini['Roles'])
+                self.permition_format(channel, ini[channel], roles=ini['Roles'])
 
     def default_permition_format(self, client):
         for server_id in self.raw_config['Server Specific']['servers'].split(','):
@@ -62,11 +62,11 @@ class Config_Creator:
         unique_command_list = {}
 
         for command_name, command_config in ini.items():
-            if command_name not in COMMAND_DICT:
+            if command_name not in self.command_dict:
                 print('Command: '+command_name+' not defined... omitting')
                 continue
 
-            current_command = COMMAND_DICT[command_name]
+            current_command = self.command_dict[command_name]
             command_config = command_config.split('\n')
 
             for string in command_config:
@@ -101,14 +101,14 @@ class Config_Creator:
 
 
 
+
+
 async def Master_Initialise(client, main_loop, thread_loop):
     '''Runs all initialisation scripts in the correct order, 
          running the main thread loop when it finishes'''
+    print('='*10+'BEGINNING INIT'+'='*10)
     main = Main(client)
 
-    main.commands = COMMAND_DICT
-
-    print('='*10+'BEGINNING INIT'+'='*10)
     print('Adding Listeners')
     addListeners(client, main)
     print('\n')
@@ -118,12 +118,11 @@ async def Master_Initialise(client, main_loop, thread_loop):
         await asyncio.sleep(1)
     print('\n')
 
+    main.resolve_external(EXTENSION_DICT, thread_loop)
 
-    main.set_config(Config_Creator(client))
+    main.set_config(Config_Creator(client, EXTENSION_DICT))
     print('\n')
 
-
-    main.resolve_tasks(TASK_DICT, thread_loop)
     print('='*10+'INIT COMPLETED'+'='*10+'\n')
     print('\n')
 
@@ -134,8 +133,5 @@ async def Master_Initialise(client, main_loop, thread_loop):
 
     await thread_loop.create_task(main_loop(main, thread_loop))
 
-def add_command(command):
-    COMMAND_DICT.update(command)
-
-def add_task(task):
-    TASK_DICT.update(task)
+def extend_bot(func, f_type):
+    EXTENSION_DICT[f_type].update(func)

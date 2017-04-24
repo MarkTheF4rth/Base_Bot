@@ -1,10 +1,10 @@
-from initialiser import add_command
+from initialiser import extend_bot
 
 def command(arglen=-1, aliases=[], description=None):
     class command_struct(object):
         '''Stores information about a specific command'''
         def __init__(self, function):
-            add_command({function.__name__:self})
+            extend_bot({function.__name__:self}, 'command')
             self.aliases = [function.__name__] + aliases
             self.context = None
             self.description = description

@@ -10,14 +10,34 @@ class Main(object):
     def __init__(self, client):
         self.in_messages = []
         self.out_messages = []
+        self.pending_tasks = []
         self.connected = False
         self.client = client
         self.commands = []
+        self.home_dir = os.getcwd()
+        self.data_dir = os.getcwd()+'/Data'
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def set_config(self, config):
         self.raw_config = config.raw_config
         self.commands = config.command_config
+
+    def resolve_external(self, external_dict, thread_loop):
+        self.commands = external_dict['command']
+        print('---Integrating external commands:')
+        for command_name in self.commands:
+            print('------{} added'.format(command_name))
+        print('\n')
+        print('---Integrating external functions:')
+        for func, func_name in external_dict['func'].items():
+            setattr(self, func_name, func)
+            func.main = self
+            print('------{} added'.format(func_name))
+
+        print('\n')
+
+        self.resolve_tasks(external_dict['task'], thread_loop)
+        print('\n')
 
     def resolve_tasks(self, task_dict, thread_loop):
         self.thread_loop = thread_loop
@@ -38,6 +58,7 @@ class Main(object):
         for name, task in self.tasks['init'].items():
             thread_loop.create_task(task(self))
             print('------{} initialised'.format(name))
+
 
     def message_handler(self, message, edit=False):
         if message.channel.id in self.commands.command_tree and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
@@ -69,7 +90,11 @@ class Main(object):
                     command(self, message, ctx)
                     break
 
+
     def message_printer(self, message, channel, header='', msg_break=''):
         if channel == 'hub':
             channel = self.hub_channel
         self.out_messages.append([channel, message, header, msg_break])
+
+    def call_task(self, task, *args, **kwargs):
+        self.pending_tasks.append([self.tasks['call'][task], [*args], {**kwargs}])
