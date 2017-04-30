@@ -12,16 +12,16 @@ def help(self, message, ctx):
     msg_break = '**Continued...**' 
     lengths = [] 
  
-    for command_name, command in self.commands.unique_command_tree[message.channel.id].items():
-        for role in command.roles[message.channel.id]: 
-            if role in [x.name for x in message.author.roles]: 
-                command_name = '/'.join(command.aliases)
-                if 'pm_help' in command.flags: 
-                    pm_output.append((command_name, command.description))
-                else: 
-                    output.append((command_name, command.description)) 
-                lengths.append(len(command_name)) 
-                break 
+    for command_name, command in self.commands.items():
+        description = command.get_description(message.channel, message.author.roles)
+        if not description:
+            continue
+        command_name = '/'.join(command.aliases)
+        if 'pm_help' in command.flags: 
+            pm_output.append((command_name, description))
+        else: 
+            output.append((command_name, description))
+        lengths.append(len(command_name)) 
  
     command_length = max(lengths) 
 

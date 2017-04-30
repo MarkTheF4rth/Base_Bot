@@ -1,0 +1,6 @@
+*_
+**.swp
+CommandModules/*
+Configs/*
+Data/*
+token.txt
