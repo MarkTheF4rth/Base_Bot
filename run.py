@@ -30,7 +30,6 @@ def import_libs():
                     importlib.invalidate_caches()
             os.chdir('..')
     os.chdir('..')
-    print(os.getcwd())
 
 def verify_bot():
     verified = True
