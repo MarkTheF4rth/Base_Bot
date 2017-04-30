@@ -19,8 +19,10 @@ class Main(object):
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def set_config(self, config):
-        self.raw_config = config.raw_config
-        self.commands = config.command_config
+        self.raw_config =   config[0]
+        self.commands =     config[1]
+        self.command_ref =  config[2]
+        self.command_char = config[3]
 
     def resolve_external(self, external_dict, thread_loop):
         self.commands = external_dict['command']
@@ -60,33 +62,42 @@ class Main(object):
             print('------{} initialised'.format(name))
 
 
-    def message_handler(self, message, edit=False):
-        if message.channel.id in self.commands.command_tree and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
-            self.message_parser(message, edit)
+#    def message_handler(self, message, edit=False):
+#        print('received message')
+#        if message.channel.id in self.command_ref and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
+#            self.message_parser(message, edit)
 
-    def message_parser(self, message, edit):
-        content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
+    def message_handler(self, message, edit):
+        if not message.content.startswith(self.command_char):
+            return
+
+        if self.raw_config['Main']['chain commands'] == 'True':
+            content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
+        else:
+            content = [message.content[1:].split()]
+
         for item in content:
             for task in self.tasks['onmessage']:
                 task(self)
-            self.in_messages.append([item, message])
+            self.in_messages.append((item, message))
 
     def command_handler(self):
         for content, message in self.in_messages:
             self.in_messages.pop(0)
-            if content[0] in self.commands[message.channel.id]:
-                command = self.commands[message.channel.id][content[0]]
+            if content[0] in self.command_ref:
+                command = self.commands[self.command_ref[content[0]]]
 
-                if not command.valid_len(len(content)):
+                if not command.validate_length(len(content)-1):
                     self.message_printer('Please use a valid amount of arguments for this comand', message.channel)
                     break
 
                 print('Processed message: ', message.content, message.channel)
-                accepted_roles = set([role.name for role in message.author.roles]+[message.author.id]) & set(command.roles[message.channel.id])
+                accepted_roles = command.validate_role(message.channel.id, message.author.roles) 
+                print(accepted_roles)
                 if accepted_roles:
                     ctx = context.Context()
                     ctx.accepted_roles = accepted_roles
-                    ctx.message_content = content
+                    ctx.message_content = content[1:]
                     command(self, message, ctx)
                     break
 

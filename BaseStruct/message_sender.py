@@ -2,7 +2,7 @@ import asyncio
 
 max_msg_size = 1500
 
-async def send_message(client, channel_str, message_str, header='', msg_break=''):
+async def send_message(client, channel_str, message_str, header='', msg_break='', recur_depth=1):
     if not message_str:
         return
 
@@ -21,8 +21,8 @@ async def send_message(client, channel_str, message_str, header='', msg_break=''
             message_head += '```'
             message_tail = '```' + message_tail
 
-        return await really_send_message(client, channel_str, message_head)
-        return await send_message(client, channel_str, msg_break+message_tail, header, msg_break)
+        await really_send_message(client, channel_str, message_head)
+        await send_message(client, channel_str, msg_break+message_tail, header, msg_break, recur_depth+1)
 
     else:
         return await really_send_message(client, channel_str, header+message_str)

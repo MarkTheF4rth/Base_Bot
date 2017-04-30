@@ -10,7 +10,7 @@ FALSE_CASE = ['False', 'false', '0', 'no']
 
 class Config_Creator:
     def __init__(self, client, extension_dict):
-        self.command_dict = extension_dict['command']
+        self.commands, self.command_ref = self.set_commands(extension_dict['command'])
         self.raw_config = configparser.ConfigParser(dict_type=OrderedDict) #Raw Master Config
         self.raw_config.read('Configs/MASTER-Config.ini')
         self.command_config = commandConfig.Command_Config() #Config for all commands
@@ -22,6 +22,16 @@ class Config_Creator:
                 self.ini_format(server_config, client)
 
         self.default_permition_format(client)
+
+    def set_commands(self, command_dict):
+        new_command_dict = OrderedDict()
+        command_ref = {}
+        for command, function in command_dict.items():
+            new_command_dict.update({command:command})
+            for alias in function.aliases:
+                command_ref.update({alias:command})
+
+        return command_dict, command_ref 
 
     def ini_format(self, ini, client):
         print('Applying config formats to channels in {}'.format(client.get_server(ini['Main']['server id'])))
@@ -58,22 +68,20 @@ class Config_Creator:
                     self.permition_format(channel.id, self.raw_config['Default Commands'])
 
     def permition_format(self, channel, ini, roles=[]):
-        command_dict = {}
-        unique_command_list = {}
-
         for command_name, command_config in ini.items():
-            if command_name not in self.command_dict:
+            if command_name not in self.command_ref:
                 print('Command: '+command_name+' not defined... omitting')
                 continue
 
-            current_command = self.command_dict[command_name]
+            current_command = self.commands[self.command_ref[command_name]]
             command_config = command_config.split('\n')
 
             for string in command_config:
-                split_text = re.match(r'(\w+): ([^:]+)', string)
-                if split_text:
+                split_text = string.split(':', 1)
 
-                    identifier, values = split_text.groups()
+                if split_text:
+                    identifier, values = split_text
+                    identifier = identifier.strip()
                     
                     if identifier == 'ROLE':
                         for value in values.split(','):
@@ -87,21 +95,11 @@ class Config_Creator:
                     elif identifier == 'FLAGS':
                         current_command.set_flags(values)
 
-                            
-            for alias in current_command.aliases: 
-                command_dict.update({alias:current_command})
-            unique_command_list.update({command_name:current_command})
+            self.commands[self.command_ref[command_name]] = current_command
 
-        if channel in self.command_config.unique_command_tree:
-            self.command_config.command_tree[channel].update(command_dict)
-            self.command_config.unique_command_tree[channel].update(unique_command_list)
-        else:
-            self.command_config.command_tree.update({channel:command_dict})
-            self.command_config.unique_command_tree.update({channel:unique_command_list})
-
-
-
-
+    def get_attributes(self):
+        return (self.raw_config, self.commands, self.command_ref,
+                self.raw_config['Main']['command char'])
 
 async def Master_Initialise(client, main_loop, thread_loop):
     '''Runs all initialisation scripts in the correct order, 
@@ -120,7 +118,8 @@ async def Master_Initialise(client, main_loop, thread_loop):
 
     main.resolve_external(EXTENSION_DICT, thread_loop)
 
-    main.set_config(Config_Creator(client, EXTENSION_DICT))
+    config = Config_Creator(client, EXTENSION_DICT)
+    main.set_config(config.get_attributes())
     print('\n')
 
     print('='*10+'INIT COMPLETED'+'='*10+'\n')
