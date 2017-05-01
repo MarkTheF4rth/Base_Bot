@@ -4,7 +4,7 @@ from collections import OrderedDict
 from bot import Main
 from StorageClasses import commandConfig
 
-EXTENSION_DICT = {'task':{}, 'command':{}, 'func':{}}
+EXTENSION_DICT = {'task':{}, 'command':OrderedDict(), 'func':{}}
 TRUE_CASE = ['True', 'true', '1', 'yes']
 FALSE_CASE = ['False', 'false', '0', 'no']
 
