@@ -1,4 +1,5 @@
-import discord, asyncio, sys, os, shelve, random, types, importlib
+import discord, asyncio, sys, os, shelve, random, types
+import importlib.util
 
 sys.path.insert(0, os.getcwd())
 sys.path.insert(0, os.getcwd()+'/BaseStruct')
@@ -19,17 +20,19 @@ async def main_loop(main, thread_loop):
         await asyncio.sleep(1)
 
 def import_libs():
-    os.chdir('CommandModules')
-    for lib in next(os.walk('.'))[1]:
-        if os.path.isdir(lib) and not lib.startswith('.') and not lib.startswith('_'):
-            os.chdir(lib)
-            for script in os.listdir():
-                if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
-                    sys.path.insert(0, os.getcwd())
-                    importlib.import_module(script.strip('.py'))
-                    importlib.invalidate_caches()
-            os.chdir('..')
-    os.chdir('..')
+    homedir = os.getcwd()
+    startdir = homedir+'/CommandModules'
+    for root, dirs, files in os.walk(startdir):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
+        for script in files:
+            if not script.startswith('.') and not script.startswith('_'):
+                os.chdir(root)
+
+                spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
+                foo = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(foo)
+
+                os.chdir(homedir)
 
 def verify_bot():
     verified = True
