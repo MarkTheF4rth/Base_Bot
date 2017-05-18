@@ -12,10 +12,13 @@ class Main(object):
         self.out_messages = []
         self.pending_tasks = []
         self.connected = False
+        self.running = True
         self.client = client
         self.commands = []
         self.home_dir = os.getcwd()+'/'
         self.data_dir = os.getcwd()+'/Data/'
+        self.config_dir = os.getcwd()+'/Configs/'
+        self.command_dir = os.getcwd()+'/CommandModules/'
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def set_config(self, config):
@@ -61,12 +64,6 @@ class Main(object):
             thread_loop.create_task(task(self))
             print('------{} initialised'.format(name))
 
-
-#    def message_handler(self, message, edit=False):
-#        print('received message')
-#        if message.channel.id in self.command_ref and message.content.lstrip().startswith(self.raw_config['Main']['command char']):
-#            self.message_parser(message, edit)
-
     def message_handler(self, message, edit):
         if not message.content.startswith(self.command_char):
             return
@@ -91,9 +88,8 @@ class Main(object):
                     self.message_printer('Please use a valid amount of arguments for this comand', message.channel)
                     break
 
-                print('Processed message: ', message.content, message.channel)
                 accepted_roles = command.validate_role(message.channel.id, message.author.roles) 
-                print(accepted_roles)
+                print('Processed message from: {} with roles:{} in channel:{} ... message:{}'.format(message.author, [role.name for role in accepted_roles], message.channel,  message.content))
                 if accepted_roles:
                     ctx = context.Context()
                     ctx.accepted_roles = accepted_roles

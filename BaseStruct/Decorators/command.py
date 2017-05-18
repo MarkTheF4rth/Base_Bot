@@ -24,7 +24,7 @@ def command(arglen=-1, aliases=[], description=None):
                 self.command_structure[channel].append(role)
 
         def set_flags(self, string):
-            '''Sets 5'''
+            '''Sets flags for commands'''
             self.flags = string.split()
 
         def validate_length(self, size):

@@ -8,16 +8,23 @@ sys.path.insert(0, os.getcwd()+'/BaseStruct/Decorators')
 from message_sender import send_message
 from initialiser import Master_Initialise
 
-async def main_loop(main, thread_loop):
-    while not CLIENT.is_closed:
-        main.command_handler()
-        for message in main.out_messages:
-            await send_message(CLIENT, *message)
-            main.out_messages.pop(0)
+async def main_loop(main, thread_loop, config):
+    while main.connected:
+        while main.running:
+            main.command_handler()
+            for message in main.out_messages:
+                await send_message(CLIENT, *message)
+                main.out_messages.pop(0)
+    
+            for task in main.pending_tasks:
+                await task[0](main, *task[1], **task[2])
+            await asyncio.sleep(1)
 
-        for task in main.pending_tasks:
-            await task[0](main, *task[1], **task[2])
-        await asyncio.sleep(1)
+        config.resolve_configs(CLIENT)
+        main.set_config(config.get_attributes())
+        main.running = True
+    
+
 
 def import_libs():
     homedir = os.getcwd()
