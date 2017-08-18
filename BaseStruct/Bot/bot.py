@@ -5,9 +5,10 @@ import sys
 import threading
 import time
 from StorageClasses import context
+from Initialise.config_creator import ConfigCreator
 
-class Main(object):
-    def __init__(self, client):
+class Bot(ConfigCreator):
+    def __init__(self, client, extension_dict):
         self.in_messages = []
         self.out_messages = []
         self.pending_tasks = []
@@ -21,13 +22,8 @@ class Main(object):
         self.command_dir = os.getcwd()+'/CommandModules/'
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
-    def set_config(self, config):
-        self.raw_config =   config[0]
-        self.commands =     config[1]
-        self.command_ref =  config[2]
-        self.command_char = config[3]
-
     def resolve_external(self, external_dict, thread_loop):
+        ConfigCreator.__init__(self, self.client, external_dict)
         self.commands = external_dict['command']
         print('---Integrating external commands:')
         for command_name in self.commands:

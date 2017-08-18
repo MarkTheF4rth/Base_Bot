@@ -1,4 +1,4 @@
-from initialiser import extend_bot
+from Initialise.initialise import extend_bot
 
 def command(arglen=-1, aliases=[], description=None):
     class command_struct(object):

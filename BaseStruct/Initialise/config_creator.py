@@ -1,24 +1,20 @@
-import os, re, configparser, asyncio, sys, random, copy, discord
-from addeventlisteners import addListeners
+import os, configparser, discord
 from collections import OrderedDict
-from bot import Main
 from StorageClasses import commandConfig
 
-EXTENSION_DICT = {'task':{}, 'command':OrderedDict(), 'func':{}}
-TRUE_CASE = ['True', 'true', '1', 'yes']
-FALSE_CASE = ['False', 'false', '0', 'no']
-
-class Config_Creator:
+class ConfigCreator:
     def __init__(self, client, extension_dict):
         self.permission_presets = {}
-        self.raw_config = configparser.ConfigParser(dict_type=OrderedDict) #Raw Master Config
+        self.raw_config = configparser.ConfigParser(dict_type=OrderedDict)
         self.raw_config.read('Configs/MASTER-Config.ini')
+        self.command_char = self.raw_config['Main']['command char']
 
         self.commands, self.command_ref = self.set_commands(extension_dict['command'])
         self.command_config = commandConfig.Command_Config() #Config for all commands
         self.resolve_configs(client)
 
     def resolve_configs(self, client):
+        '''Read every single ini file that isn't the MASTER config, then resolve them'''
         for config_file in os.listdir('Configs'):
             if config_file.endswith('.ini') and 'MASTER' not in config_file:
                 server_config = configparser.ConfigParser(dict_type=OrderedDict)
@@ -28,6 +24,7 @@ class Config_Creator:
         self.master_permition_format(client)
 
     def set_commands(self, command_dict):
+        '''Creates the command and command reference dictionaries'''
         self.permission_presets = self.find_presets(self.raw_config)
 
         new_command_dict = OrderedDict()
@@ -138,40 +135,3 @@ class Config_Creator:
 
             self.commands[self.command_ref[command_name]] = current_command
 
-    def get_attributes(self):
-        return (self.raw_config, self.commands, self.command_ref,
-                self.raw_config['Main']['command char'])
-
-async def Master_Initialise(client, main_loop, thread_loop):
-    '''Runs all initialisation scripts in the correct order, 
-         running the main thread loop when it finishes'''
-    print('='*10+'BEGINNING INIT'+'='*10)
-    main = Main(client)
-
-    print('Adding Listeners')
-    addListeners(client, main)
-    print('\n')
-
-    while not main.connected:
-        print('Connecting....')
-        await asyncio.sleep(1)
-    print('\n')
-
-    main.resolve_external(EXTENSION_DICT, thread_loop)
-
-    config = Config_Creator(client, EXTENSION_DICT)
-    main.set_config(config.get_attributes())
-    print('\n')
-
-    print('='*10+'INIT COMPLETED'+'='*10+'\n')
-    print('\n')
-
-    print('Logged in as')  
-    print(client.user.name)  
-    print(client.user.id)  
-    print('-----\n')
-
-    await thread_loop.create_task(main_loop(main, thread_loop, config))
-
-def extend_bot(func, f_type):
-    EXTENSION_DICT[f_type].update(func)

@@ -1,5 +1,5 @@
 import inspect
-from initialiser import extend_bot
+from Initialise.initialise import extend_bot
 
 def task(run_time='call'):
     class task:
