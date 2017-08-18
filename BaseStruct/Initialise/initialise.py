@@ -37,7 +37,11 @@ async def Master_Initialise(client, main_loop, thread_loop):
     print('='*10+'BEGINNING INIT'+'='*10)
 
     verify = Verify()
-    verify.stage_one() # first verification stage
+    if not verify.stage_one(): # first verification stage
+        print('One or more critical failures arose, exiting...')
+        return
+
+    print('Stage one verification passed')
 
     print('\n')
 

@@ -8,11 +8,7 @@ class Verify:
     def stage_one(self):
         print('Beginning stage one verification:')
         system = self.filesystem_verify()
-        if all([system]):
-            print('Stage one verification passed')
-        else:
-            print('One or more critical failures arose, exiting...')
-            sys.exit()
+        return all([system])
         
 
     def filesystem_verify(self):
