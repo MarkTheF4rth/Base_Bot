@@ -1,6 +1,6 @@
 from Initialise.initialise import extend_bot
 
-def command(arglen=-1, aliases=[], description=None):
+def command(aliases=[], description=None, arglen=-1):
     class command_struct(object):
         '''Stores information about a specific command'''
         def __init__(self, function):
@@ -11,6 +11,7 @@ def command(arglen=-1, aliases=[], description=None):
             self.command_structure = {}
             self.description_ref = {'description':description}
             self.flags = []
+
             self.arglen = arglen
     
             self.run = function
@@ -28,11 +29,15 @@ def command(arglen=-1, aliases=[], description=None):
             self.flags = string.split()
 
         def validate_length(self, size):
-            if size == self.arglen or self.arglen == -1:
+            '''Check that the amount of parameters are either more than the minimum, 
+            or between the minimum and maximum'''
+            if self.arglen < 0:
                 return True
-            if type(self.arglen) == list and size in self.arglen:
-                return True
-            return False
+
+            if type(self.arglen) is tuple:
+                return self.arglen[0] <= size <= self.arglen[1]
+
+            return size >= self.arglen
 
         def validate_role(self, channel, roles):
             valid = []
