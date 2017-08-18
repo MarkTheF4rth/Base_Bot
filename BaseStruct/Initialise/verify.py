@@ -19,9 +19,9 @@ class Verify:
         '''Checks if file structure is correct, make corrections if needed'''
         print('----Verifying that file structure is correct')
         create_dir = lambda x: os.makedirs(x) if not os.path.isdir(x) else True
-        commands = create_dir(self.base_path+'CommandModules')
-        configs  = create_dir(self.base_path+'Configs')
-        data     = create_dir(self.base_path+'Data')
+        commands = create_dir(self.base_path+'/CommandModules')
+        configs  = create_dir(self.base_path+'/Configs')
+        data     = create_dir(self.base_path+'/Data')
     
         if not os.path.exists(self.base_path+'/Configs/MASTER-Config.ini'):
             print('--------CRITICAL FAILURE : Master config file not found, creating template...')
