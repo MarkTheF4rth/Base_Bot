@@ -1,6 +1,6 @@
 from Initialise.initialise import extend_bot
 
-def command(aliases=[], description=None, arglen=-1):
+def command(aliases=[], description=None, category='General', arglen=-1):
     class command_struct(object):
         '''Stores information about a specific command'''
         def __init__(self, function):
@@ -9,9 +9,8 @@ def command(aliases=[], description=None, arglen=-1):
             self.aliases = [function.__name__] + aliases
             self.context = None
             self.command_structure = {}
-            self.description_ref = {'description':description}
+            self.description_ref = {'description':description, 'category':category}
             self.flags = []
-
             self.arglen = arglen
     
             self.run = function
@@ -55,7 +54,13 @@ def command(aliases=[], description=None, arglen=-1):
                     if role in roles:
                         return self.description_ref[channel][role]
                 return self.description_ref[channel]['description']
-            return self.description_ref['description']            
+            return self.description_ref['description']
+
+        def get_category(self, channel):
+            if channel in self.description_ref:
+                return self.description_ref[channel]['category']
+            return self.description_ref['category']
+
 
         def __call__(self, *args, **kwargs):
             self.run(*args, **kwargs)
