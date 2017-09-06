@@ -1,0 +1,12 @@
+{
+    "meta" : "This file is responsible for dictating what default values to fall back on if those values do not exist in a given server config, keys in the Required list must be present to prevent an error",
+
+    "type" : [],
+
+    "Required" : [],
+
+    "optional" : {
+        "channels" : {},
+        "categories" : ["Default"]
+    }
+}

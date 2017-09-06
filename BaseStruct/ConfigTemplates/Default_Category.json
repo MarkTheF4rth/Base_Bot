@@ -1,0 +1,15 @@
+{
+    "meta" : "This file is responsible for dictating what default values to fall back on if those values do not exist in a given category config, keys in the Required list must be present to prevent an error",
+
+    "type" : {},
+
+    "required" : [],
+
+    "optional" : {
+        "display"       : true,
+        "roles"         : ["@everyone"],
+        "pm_help"       : false,
+        "commands"      : [],
+        "subcategories" : []
+    }
+}

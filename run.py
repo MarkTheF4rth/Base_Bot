@@ -19,7 +19,7 @@ async def main_loop(bot, thread_loop):
                 await task[0](bot, *task[1], **task[2])
             await asyncio.sleep(1)
 
-        bot.resolve_configs(CLIENT)
+        bot.set_configs()
         bot.running = True
     
 

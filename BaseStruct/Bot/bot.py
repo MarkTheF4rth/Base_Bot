@@ -1,14 +1,11 @@
-import asyncio
-import importlib
 import os
-import sys
-import threading
-import time
 from StorageClasses import context
 from Initialise.config_creator import ConfigCreator
 
 class Bot(ConfigCreator):
-    def __init__(self, client, extension_dict):
+    def __init__(self, client, extension_dict, filesystem):
+        self.filesystem = filesystem
+        self.extension_dict = extension_dict
         self.in_messages = []
         self.out_messages = []
         self.pending_tasks = []
@@ -23,14 +20,14 @@ class Bot(ConfigCreator):
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def resolve_external(self, external_dict, thread_loop):
-        ConfigCreator.__init__(self, self.client, external_dict)
+        ConfigCreator.__init__(self, self.client)
         self.commands = external_dict['command']
         print('---Integrating external commands:')
         for command_name in self.commands:
             print('------{} added'.format(command_name))
         print('\n')
         print('---Integrating external functions:')
-        for func, func_name in external_dict['func'].items():
+        for func_name, func in external_dict['func'].items():
             setattr(self, func_name, func)
             func.main = self
             print('------{} added'.format(func_name))
@@ -64,7 +61,7 @@ class Bot(ConfigCreator):
         if not message.content.startswith(self.command_char):
             return
 
-        if self.raw_config['Main']['chain commands'] == 'True':
+        if self.config['Main']['chain commands'] == 'True':
             content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
         else:
             content = [message.content[1:].split()]
@@ -75,23 +72,23 @@ class Bot(ConfigCreator):
             self.in_messages.append((item, message))
 
     def command_handler(self):
+        '''Handles incoming commands, running them if they are valid'''
         for content, message in self.in_messages:
             self.in_messages.pop(0)
-            if content[0] in self.command_ref:
-                command = self.commands[self.command_ref[content[0]]]
+            channel = self.channels[message.channel.id]
+            command, accepted_roles = channel.get_command(content[0], message.author.roles)
 
+            if accepted_roles:
                 if not command.validate_length(len(content)-1):
                     self.message_printer('Please use a valid amount of arguments for this comand', message.channel)
                     break
 
-                accepted_roles = command.validate_role(message.channel.id, message.author.roles) 
                 print('Processed message from: {} with roles:{} in channel:{} ... message:{}'.format(message.author, [role.name for role in accepted_roles], message.channel,  message.content))
-                if accepted_roles:
-                    ctx = context.Context()
-                    ctx.accepted_roles = accepted_roles
-                    ctx.message_content = content[1:]
-                    command(self, message, ctx)
-                    break
+                ctx = context.Context()
+                ctx.accepted_roles = accepted_roles
+                ctx.message_content = content[1:]
+                command(self, message, ctx)
+                break
 
 
     def message_printer(self, message, channel, header='', msg_break=''):

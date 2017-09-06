@@ -1,137 +1,87 @@
-import os, configparser, discord
+import os, json, discord
 from collections import OrderedDict
-from StorageClasses import commandConfig
+from StorageClasses.channel import Channel
+from StorageClasses.formatted_command import FormattedCommand
 
 class ConfigCreator:
-    def __init__(self, client, extension_dict):
-        self.permission_presets = {}
-        self.raw_config = configparser.ConfigParser(dict_type=OrderedDict)
-        self.raw_config.read('Configs/MASTER-Config.ini')
-        self.command_char = self.raw_config['Main']['command char']
+    def __init__(self, client):
+        self.client = client
+        self.default_server_config, self.default_category_config = self.filesystem.get_defaults(key='optional')
+        self.set_configs()
+        self.command_char = self.config['Main']['command character']
 
-        self.commands, self.command_ref = self.set_commands(extension_dict['command'])
-        self.command_config = commandConfig.Command_Config() #Config for all commands
-        self.resolve_configs(client)
-
-    def resolve_configs(self, client):
-        '''Read every single ini file that isn't the MASTER config, then resolve them'''
-        for config_file in os.listdir('Configs'):
-            if config_file.endswith('.ini') and 'MASTER' not in config_file:
-                server_config = configparser.ConfigParser(dict_type=OrderedDict)
-                server_config.read(('Configs/'+config_file))
-                self.server_permition_format(server_config, client)
-
-        self.master_permition_format(client)
-
-    def set_commands(self, command_dict):
-        '''Creates the command and command reference dictionaries'''
-        self.permission_presets = self.find_presets(self.raw_config)
-
-        new_command_dict = OrderedDict()
-        command_ref = {}
-        for command, function in command_dict.items():
-            new_command_dict.update({command:command})
-            for alias in function.aliases:
-                command_ref.update({alias:command})
-
-        return command_dict, command_ref 
-
-    def find_presets(self, server_ini):
-        print('Loading command presets:')
-        return_ini = {}
-        for heading, content in server_ini.items():
-            if "command" in heading.lower():
-                return_ini.update({heading:content})
-                print('---{} loaded'.format(heading))
-
-        return return_ini
+    def set_configs(self):
+        self.config = self.filesystem.resolve_external_configs()
+        self.categories = self.format_categories(self.extension_dict['command'])
+        self.channels = self.format_servers(self.config['Servers'])
 
 
-    def master_permition_format(self, client):
-        for server_id, configs in self.raw_config['Server Config'].items():
-            server_id = server_id.strip()
-            server = client.get_server(server_id)
-            ini = {}
+    def format_commands(self, category_name, category_config, command_dict, explored):
+        '''return a dict of name:command pairs that are involved in the given category'''
+        formatted_commands = {}
+        explored.append(category_name) # prevent infinite loops
+        commands = {command_name:command_dict['ALL_COMMANDS'][command_name] for command_name in category_config['commands']}
 
-            for config in configs.split(','):
-                print(config, [key for key in self.permission_presets.keys()])
-                if config in self.permission_presets:
-                    ini.update(self.permission_presets[config])
+        if category_name in command_dict:
+            commands.update(command_dict[category_name])
 
-            print('\n')
+        for command_name, command in commands.items():
+            formatted_commands.update({command_name:FormattedCommand(command, category_config, category_name)})
 
-            if not server:
-                print('server: \''+server_id+'\' not found... omitting')
-                continue
+        for subcategory_name in category_config['subcategories']:
+            if subcategory_name not in explored:
+                new_config = self.merge_configs(self.config['Categories'][subcategory_name], category_config)
+                formatted_commands.update(self.format_commands(subcategory_name, new_config, command_dict, explored))
 
-            print('Applying command permitions to all valid channels in {}, ({})'.format(server_id, server.name))
+        return formatted_commands
+
+
+    def format_categories(self, command_dict):
+        '''formats categories and the  commands 
+            inside them to a more easily readable format'''
+        categories = {category:[] for category in self.config['Categories']}
+        for category_name, category_config in self.config['Categories'].items():
+            full_config = self.merge_configs(category_config, self.default_category_config)
+            formatted_commands = self.format_commands(category_name, full_config, command_dict, [])
+            categories[category_name] = formatted_commands
+
+        return categories
+
+    def format_servers(self, server_configs):
+        '''adds the correct command with the desired presets to each channel'''
+        channels = {}
+        for server_id, server_config in server_configs.items():
+            print('Formatting server {}'.format(server_id))
+            server_config = self.merge_configs(server_config, self.default_server_config)
+            server = self.client.get_server(server_id)
             for channel in server.channels:
-                if channel.type != discord.ChannelType.voice and channel.id not in self.command_config.command_tree and ini:
-                    
-                    print('---{}'.format(channel.name))
-                    self.permition_format(channel.id, ini) 
-
-
-    def server_permition_format(self, ini, client):
-        print('Applying config formats to channels in {}'.format(client.get_server(ini['Main']['server id'])))
-        server_presets = self.find_presets(ini)
-        for channel, presets in ini['Channel Config'].items():
-            if not channel.isdigit():
-                print('---WARNING Invalid channel {} (not an integer) omitting...'.format(channel))
-                continue
-
-            if not client.get_channel(channel):
-                print('---WARNING Invalid channel {} (not found) omitting...'.format(channel))
-                continue
-
-            permission_ini = {}
-            loaded = []
-            omitted = []
-
-            for preset in presets.split(','):
-                if preset in server_presets:
-                    permission_ini.update(server_presets[preset]) 
-                    loaded.append(preset)
-
-                elif preset in self.permission_presets:
-                    permission_ini.update(self.permission_presets[preset])
-                    loaded.append(preset)  
+                if channel.id in server_config['channels']:
+                    merged_config = self.merge_configs(server_config['channels'][channel.id], server_config)
+                    new_channel = self.format_channel(channel, merged_config)
 
                 else:
-                    omitted.append(preset)
+                    new_channel = self.format_channel(channel, server_config)
+
+                channels.update(new_channel)
+
+        return channels
 
 
-            if permission_ini:
-                self.permition_format(channel, permission_ini, roles=ini['Roles'])
+    def format_channel(self,  channel, channel_config):
+        '''formats and returns single channel'''
+        channel_commands = {}
+        for category in channel_config['categories']:
+            channel_commands.update(self.categories[category])
 
+        return({channel.id:Channel(channel.id, channel_commands)})
+                
 
-    def permition_format(self, channel, ini, roles=[]):
-        for command_name, command_config in ini.items():
-            if command_name not in self.command_ref:
-                print('Command: '+command_name+' not defined... omitting')
-                continue
+    def merge_configs(self, primary_config, fallback_config):
+        '''merges a fallback config into a given config, 
+            filling any gaps in keys the primary config may have'''
+        for key in fallback_config:
+            if key not in primary_config:
+                primary_config[key] = fallback_config[key]
 
-            current_command = self.commands[self.command_ref[command_name]]
-            command_config = command_config.split('\n')
-
-            for string in command_config:
-                split_text = string.split(':', 1)
-
-                if split_text:
-                    identifier, values = split_text
-                    identifier = identifier.strip()
-                    
-                    if identifier == 'ROLE':
-                        for value in values.split(','):
-                            value = value.strip()
-                            if value in roles: 
-                                for role in roles[value].split(','):
-                                    current_command.add_role(role.strip(), channel)
-                            else:
-                                current_command.add_role(value, channel)
-
-                    elif identifier == 'FLAGS':
-                        current_command.set_flags(values)
-
-            self.commands[self.command_ref[command_name]] = current_command
+        return primary_config
 

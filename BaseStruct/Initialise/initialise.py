@@ -2,10 +2,11 @@ import os, asyncio
 from collections import OrderedDict
 from Initialise.verify import Verify
 from Initialise.add_event_listeners import add_event_listeners
+from filesystem import Filesystem
 from Bot.bot import Bot
 import importlib.util
 
-EXTENSION_DICT = {'task':{}, 'command':OrderedDict(), 'func':{}}
+EXTENSION_DICT = {'task':{}, 'command':OrderedDict({'ALL_COMMANDS':{}}), 'func':{}}
 TRUE_CASE = ['TRUE', 'True', 'true', '1', 'yes']
 FALSE_CASE = ['FALSE', 'False', 'false', '0', 'no']
 
@@ -13,23 +14,14 @@ def extend_bot(func, f_type):
     '''Adds a given function to a local dictionary'''
     EXTENSION_DICT[f_type].update(func)
 
-
-def import_libs():
-    '''Procedurally import visible python scripts in the command modules'''
-    homedir = os.getcwd()
-    startdir = homedir+'/CommandModules'
-    for root, dirs, files in os.walk(startdir):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
-        for script in files:
-            if not script.startswith('.') and not script.startswith('_'):
-                os.chdir(root)
-
-                spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
-                foo = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(foo)
-
-                os.chdir(homedir)
-
+def add_command(function, category):
+    '''Adds a command to a local dictionary'''
+    if category in EXTENSION_DICT['command']:
+        EXTENSION_DICT['command'][category].update(function)
+    else:
+        EXTENSION_DICT['command'][category] = function
+    EXTENSION_DICT['command']['ALL_COMMANDS'].update(function)
+    
 
 async def Master_Initialise(client, main_loop, thread_loop):
     '''Runs all initialisation scripts in the correct order, 
@@ -37,17 +29,18 @@ async def Master_Initialise(client, main_loop, thread_loop):
     print('='*10+'BEGINNING INIT'+'='*10)
 
     verify = Verify()
-    if not verify.stage_one(): # first verification stage
-        print('One or more critical failures arose, exiting...')
-        return
+    filesystem = Filesystem()
+#    if not verify.stage_one(): # first verification stage
+#        print('One or more critical failures arose, exiting...')
+#        return
 
     print('Stage one verification passed')
 
     print('\n')
 
-    import_libs() # imports libraries from the commandmodules directory
+    filesystem.import_libs() # imports libraries from the commandmodules directory
 
-    bot = Bot(client, EXTENSION_DICT)
+    bot = Bot(client, EXTENSION_DICT, filesystem)
 
 
     print('Adding ready listener:')
