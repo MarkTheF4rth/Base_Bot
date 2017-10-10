@@ -1,6 +1,7 @@
 from Initialise.initialise import extend_bot
 
 def func():
+    """creates a callable function as part of the bot"""
     class func:
         def __init__(self, function):
             setattr(self, function.__name__, function)

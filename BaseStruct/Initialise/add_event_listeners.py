@@ -2,6 +2,8 @@ import importlib, glob, os
 from os.path import basename, isfile, dirname
 
 def add_event_listeners(client, instance, whitelist=[], blacklist=[]):
+    """adds all event listeners found in the "EventListeners"
+        dir and adds them to the bot"""
     modules = glob.glob("BaseStruct/EventListeners/*.py")
     __all__ = [basename(f)[:-3] for f in modules if isfile(f)]
 

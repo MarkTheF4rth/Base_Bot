@@ -3,6 +3,8 @@ from Initialise.initialise import extend_bot
 
 def task(run_time='call'):
     class task:
+        """A task instance can be added to a queue and 
+            be called asynchronously in any lib"""
         def __init__(self, function):
             extend_bot({function.__name__:self}, 'task')
             self.run_time = run_time

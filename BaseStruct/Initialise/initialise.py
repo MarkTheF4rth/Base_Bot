@@ -11,11 +11,11 @@ TRUE_CASE = ['TRUE', 'True', 'true', '1', 'yes']
 FALSE_CASE = ['FALSE', 'False', 'false', '0', 'no']
 
 def extend_bot(func, f_type):
-    '''Adds a given function to a local dictionary'''
+    """Adds a given function to a local dictionary"""
     EXTENSION_DICT[f_type].update(func)
 
 def add_command(function, category):
-    '''Adds a command to a local dictionary'''
+    """Adds a command to a local dictionary"""
     if category in EXTENSION_DICT['command']:
         EXTENSION_DICT['command'][category].update(function)
     else:
@@ -24,8 +24,8 @@ def add_command(function, category):
     
 
 async def Master_Initialise(client, main_loop, thread_loop):
-    '''Runs all initialisation scripts in the correct order, 
-         running the main thread loop when it finishes'''
+    """Runs all initialisation scripts in the correct order, 
+         running the main thread loop when it finishes"""
     print('='*10+'BEGINNING INIT'+'='*10)
 
     verify = Verify()

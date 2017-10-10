@@ -4,6 +4,8 @@ from StorageClasses.channel import Channel
 from StorageClasses.formatted_command import FormattedCommand
 
 class ConfigCreator:
+    """A class which reads takes in json configs and puts 
+        them in a format readable by the bot"""
     def __init__(self, client):
         self.client = client
         self.default_server_config, self.default_category_config = self.filesystem.get_defaults(key='optional')
@@ -11,13 +13,14 @@ class ConfigCreator:
         self.command_char = self.config['Main']['command character']
 
     def set_configs(self):
+        """Creates the configs, can be called multiple times to re-read"""
         self.config = self.filesystem.resolve_external_configs()
         self.categories = self.format_categories(self.extension_dict['command'])
         self.channels = self.format_servers(self.config['Servers'])
 
 
     def format_commands(self, category_name, category_config, command_dict, explored):
-        '''return a dict of name:command pairs that are involved in the given category'''
+        """return a dict of name:command pairs that are involved in the given category"""
         formatted_commands = {}
         explored.append(category_name) # prevent infinite loops
         commands = {command_name:command_dict['ALL_COMMANDS'][command_name] for command_name in category_config['commands']}
@@ -37,8 +40,8 @@ class ConfigCreator:
 
 
     def format_categories(self, command_dict):
-        '''formats categories and the  commands 
-            inside them to a more easily readable format'''
+        """formats categories and the  commands 
+            inside them to a more easily readable format"""
         categories = {category:[] for category in self.config['Categories']}
         for category_name, category_config in self.config['Categories'].items():
             full_config = self.merge_configs(category_config, self.default_category_config)
@@ -48,7 +51,7 @@ class ConfigCreator:
         return categories
 
     def format_servers(self, server_configs):
-        '''adds the correct command with the desired presets to each channel'''
+        """adds the correct command with the desired presets to each channel"""
         channels = {}
         for server_id, server_config in server_configs.items():
             print('Formatting server {}'.format(server_id))
@@ -68,7 +71,7 @@ class ConfigCreator:
 
 
     def format_channel(self,  channel, channel_config):
-        '''formats and returns single channel'''
+        """formats and returns single channel"""
         channel_commands = {}
         for category in channel_config['categories']:
             channel_commands.update(self.categories[category])
@@ -77,8 +80,8 @@ class ConfigCreator:
                 
 
     def merge_configs(self, primary_config, fallback_config):
-        '''merges a fallback config into a given config, 
-            filling any gaps in keys the primary config may have'''
+        """merges a fallback config into a given config, 
+            filling any gaps in keys the primary config may have"""
         for key in fallback_config:
             if key not in primary_config:
                 primary_config[key] = fallback_config[key]

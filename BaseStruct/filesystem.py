@@ -1,15 +1,15 @@
 import json, os, importlib, copy
 
 class Filesystem:
-    '''Deals with reading, writing, and editting files not part of Base_Bot'''
+    """Deals with reading, writing, and editting files not part of Base_Bot"""
     def __init__(self):
-        '''intialises by importing all external configs and libraries'''
+        """intialises by importing all external configs and libraries"""
         self.load_default_configs()
         self.load_external_configs()
 
 
     def import_libs(self):
-        '''Recursively import visible python scripts in the command modules'''
+        """Recursively import visible python scripts in the command modules"""
         homedir = os.getcwd()
         startdir = homedir+'/CommandModules'
         for root, dirs, files in os.walk(startdir):
@@ -27,8 +27,8 @@ class Filesystem:
 
 
     def load_default_configs(self):
-        '''loads the default configs that are used for
-            verification and defaulting optional keys'''
+        """loads the default configs that are used for
+            verification and defaulting optional keys"""
         with open('BaseStruct/ConfigTemplates/Default_Server.json') as server_file:
             self.default_server_config = json.load(server_file)
     
@@ -37,7 +37,8 @@ class Filesystem:
 
 
     def load_external_configs(self):
-        '''loads json configs from the configs folder and sorts their keys for easy reference'''
+        """loads json configs from the configs folder and sorts 
+            their keys for easy reference"""
 
         self.config_ref = {}
 
@@ -56,7 +57,7 @@ class Filesystem:
 
 
     def resolve_external_configs(self):
-        '''merge configs and return a single dictionary'''
+        """merge configs and return a single dictionary"""
         merged_config = {}
         for key, server in self.config_ref.items():
             key_type = type(self.config_ref[key]['CONFIG_TYPE'])
@@ -71,14 +72,14 @@ class Filesystem:
         return merged_config
 
     def get_defaults(self, key=None):
-        '''return default configs optionally only a certain section of them'''
+        """return default configs optionally only a certain section of them"""
         if key:
             return self.default_server_config[key], self.default_category_config[key]
         return self.default_server_config, self.default_category_config
 
 
     def get_key_origin(self, prim_key, sec_key):
-        '''given 2 keys, returns the file name of where the secondary key is held'''
+        """given 2 keys, returns the file name of where the secondary key is held"""
         for file_name, items in self.config_ref[prim_key].items():
             if sec_key in items:
                 return file_name
@@ -86,8 +87,8 @@ class Filesystem:
 
 
     def edit_channel(self, channel, action, key, value):
-        '''given a channel, edits the necessary config file 
-            using a given action and a given value'''
+        """given a channel, edits the necessary config file 
+            using a given action and a given value"""
         file_name = self.get_key_origin('Servers', channel.server.id)
         with open('Configs/'+file_name) as config_file:
             temp_dict = json.load(config_file)

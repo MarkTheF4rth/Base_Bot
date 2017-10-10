@@ -20,6 +20,8 @@ class Bot(ConfigCreator):
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def resolve_external(self, external_dict, thread_loop):
+        """Resolves external commands, functions, 
+            and tasks, to add them to self"""
         ConfigCreator.__init__(self, self.client)
         self.commands = external_dict['command']
         print('---Integrating external commands:')
@@ -38,6 +40,8 @@ class Bot(ConfigCreator):
         print('\n')
 
     def resolve_tasks(self, task_dict, thread_loop):
+        """Resolves adding external tasks, verifying 
+            that they can be added first"""
         self.thread_loop = thread_loop
         print('Resolving tasks:')
         print('---Reading tasks:')
@@ -58,6 +62,8 @@ class Bot(ConfigCreator):
             print('------{} initialised'.format(name))
 
     def message_handler(self, message, edit):
+        """Receives messages, parses them, 
+            and sends them to the command handler"""
         if not message.content.startswith(self.command_char):
             return
 
@@ -72,7 +78,7 @@ class Bot(ConfigCreator):
             self.in_messages.append((item, message))
 
     def command_handler(self):
-        '''Handles incoming commands, running them if they are valid'''
+        """Handles incoming commands, running them if they are valid"""
         for content, message in self.in_messages:
             self.in_messages.pop(0)
             channel = self.channels[message.channel.id]
@@ -92,9 +98,11 @@ class Bot(ConfigCreator):
 
 
     def message_printer(self, message, channel, header='', msg_break=''):
+        """Adds a given message to the print queue"""
         if channel == 'hub':
             channel = self.hub_channel
         self.out_messages.append([channel, message, header, msg_break])
 
     def call_task(self, task, *args, **kwargs):
+        """Calls a given task with the given arguments"""
         self.pending_tasks.append([self.tasks['call'][task], [*args], {**kwargs}])

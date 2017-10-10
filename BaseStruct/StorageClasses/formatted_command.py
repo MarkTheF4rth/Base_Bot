@@ -1,18 +1,20 @@
 
 class FormattedCommand:
+    """An object that contains the command script, 
+        and can do validation for that command"""
     def __init__(self, command, config, category_name):
         self.command = command
         self.set_config(config)
         self.category_name = category_name
 
     def set_config(self, config):
-        '''Sets keys from a config as attributes of the class'''
+        """Sets keys from a config as attributes of the class"""
         for key in config:
             setattr(self, key, config[key])
 
     def validate_length(self, size):
-        '''Check that the amount of parameters are either more than the 
-            minimum or between the minimum and maximum'''
+        """Check that the amount of parameters are either more than the 
+            minimum or between the minimum and maximum"""
         if self.command.arglen < 0:
             return True
 
@@ -23,7 +25,7 @@ class FormattedCommand:
 
 
     def get_description(self, channel, roles): # TODO REDUNDANT lookups
-        '''returns the description of the command in a specific channel'''
+        """returns the description of the command in a specific channel"""
         if channel in self.command.description_ref:
             for role in self.command.description_ref[channel]:
                 if role in roles:
@@ -32,8 +34,10 @@ class FormattedCommand:
         return self.command.description_ref['description']
 
     def get_aliases(self):
-        '''returns the aliases of the command'''
+        """returns the aliases of the command"""
         return self.command.aliases
 
     def __call__(self, *args, **kwargs):
+        """calling the FormattedCommand object will instead 
+            call the command associated with it"""
         self.command(*args, **kwargs)
