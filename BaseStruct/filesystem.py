@@ -15,6 +15,7 @@ class Filesystem:
         for root, dirs, files in os.walk(startdir):
             dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
             for script in files:
+                print(script)
                 if not script.startswith('.') and not script.startswith('_'):
                     os.chdir(root)
     
