@@ -15,7 +15,8 @@ async def main_loop(bot, thread_loop):
                 await send_message(CLIENT, *message)
                 bot.out_messages.pop(0)
     
-            for task in bot.pending_tasks:
+            while bot.pending_tasks:
+                task = bot.pending_tasks.pop(0)
                 await task[0](bot, *task[1], **task[2])
             await asyncio.sleep(1)
 
