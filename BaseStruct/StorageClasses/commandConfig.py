@@ -1,5 +1,5 @@
 class Command_Config:
-    '''Stores 3 lists regarding commands, when iterated over, uses the command_names list'''
+    """Stores 3 lists regarding commands, when iterated over, uses the command_names list"""
     def __init__(self):
         self.commands = {} # Dict of command/alias name to command
         self.command_tree = {} # Relational database of commands
