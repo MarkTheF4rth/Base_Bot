@@ -25,7 +25,7 @@ async def send_message(client, channel_str, message_str, header='', msg_break=''
             message_tail = '```' + message_tail
 
         await really_send_message(client, channel_str, message_head)
-        await send_message(client, channel_str, msg_break+message_tail, header, msg_break, recur_depth+1)
+        await send_message(client, channel_str, message_tail, msg_break, msg_break, recur_depth+1)
 
     else:
         return await really_send_message(client, channel_str, header+message_str)
