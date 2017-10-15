@@ -7,21 +7,18 @@ class Verify:
 
     def stage_one(self):
         print('Beginning stage one verification:')
-        system = self.filesystem_verify()
+        system = self.configs_verify()
         return all([system])
         
 
-    def filesystem_verify(self):
-        '''Checks if file structure is correct, make corrections if needed'''
+    def configs_verify(self):
+        """Checks if file structure is correct, make corrections if needed"""
         print('----Verifying that file structure is correct')
-        create_dir = lambda x: os.makedirs(x) if not os.path.isdir(x) else True
-        commands = create_dir(self.base_path+'/CommandModules')
-        configs  = create_dir(self.base_path+'/Configs')
-        data     = create_dir(self.base_path+'/Data')
-    
-        if not os.path.exists(self.base_path+'/Configs/MASTER-Config.ini'):
-            print('--------CRITICAL FAILURE : Master config file not found, creating template...')
-            shutil.copy(self.base_path+'/BaseStruct/ConfigTemplates/MASTER-Config.ini', self.base_path+'/Configs/MASTER-Config.ini')
+
+        files = os.listdir(self.base_path+'/Configs')
+
+        if not [file_name for file_name in files if file_name.endswith('.json')]: # no configs present
+            print('--------CRITICAL FAILURE : No config files present')
             return False
 
         return True

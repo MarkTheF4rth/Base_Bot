@@ -30,9 +30,9 @@ async def Master_Initialise(client, main_loop, thread_loop):
 
     verify = Verify()
     filesystem = Filesystem()
-#    if not verify.stage_one(): # first verification stage
-#        print('One or more critical failures arose, exiting...')
-#        return
+    if not verify.stage_one(): # first verification stage
+        print('One or more critical failures arose, exiting...')
+        return
 
     print('Stage one verification passed')
 
