@@ -1,4 +1,4 @@
-import os, json, discord
+import os, json, discord, copy
 from collections import OrderedDict
 from StorageClasses.channel import Channel
 from StorageClasses.formatted_command import FormattedCommand
@@ -23,7 +23,14 @@ class ConfigCreator:
         """return a dict of name:command pairs that are involved in the given category"""
         formatted_commands = {}
         explored.append(category_name) # prevent infinite loops
+        category_config = self.merge_configs(category_config, self.default_category_config) # fill blanks
         commands = {command_name:command_dict['ALL_COMMANDS'][command_name] for command_name in category_config['commands']}
+
+        for subcategory_name in category_config['subcategories']:
+            if subcategory_name not in explored:
+                subcategory_config = self.config['Categories'][subcategory_name]
+                category_config = self.merge_configs(subcategory_config, category_config) # extend own config
+                formatted_commands.update(self.format_commands(subcategory_name, subcategory_config, command_dict, explored))
 
         if category_name in command_dict:
             commands.update(command_dict[category_name])
@@ -31,10 +38,6 @@ class ConfigCreator:
         for command_name, command in commands.items():
             formatted_commands.update({command_name:FormattedCommand(command, category_config, category_name)})
 
-        for subcategory_name in category_config['subcategories']:
-            if subcategory_name not in explored:
-                new_config = self.merge_configs(self.config['Categories'][subcategory_name], category_config)
-                formatted_commands.update(self.format_commands(subcategory_name, new_config, command_dict, explored))
 
         return formatted_commands
 
@@ -44,9 +47,9 @@ class ConfigCreator:
             inside them to a more easily readable format"""
         categories = {category:[] for category in self.config['Categories']}
         for category_name, category_config in self.config['Categories'].items():
-            full_config = self.merge_configs(category_config, self.default_category_config)
-            formatted_commands = self.format_commands(category_name, full_config, command_dict, [])
+            formatted_commands = self.format_commands(category_name, category_config, command_dict, [])
             categories[category_name] = formatted_commands
+
 
         return categories
 
@@ -54,7 +57,6 @@ class ConfigCreator:
         """adds the correct command with the desired presets to each channel"""
         channels = {}
         for server_id, server_config in server_configs.items():
-            print('Formatting server {}'.format(server_id))
             server_config = self.merge_configs(server_config, self.default_server_config)
             server = self.client.get_server(server_id)
             for channel in server.channels:
@@ -82,6 +84,10 @@ class ConfigCreator:
     def merge_configs(self, primary_config, fallback_config):
         """merges a fallback config into a given config, 
             filling any gaps in keys the primary config may have"""
+
+        primary_config = copy.copy(primary_config) # prevent effects on given configs
+        fallback_config = copy.copy(fallback_config)
+
         for key in fallback_config:
             if key not in primary_config:
                 primary_config[key] = fallback_config[key]
