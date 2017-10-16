@@ -15,7 +15,7 @@ class Filesystem:
         for root, dirs, files in os.walk(startdir):
             dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
             for script in files:
-                if not script.startswith('.') and not script.startswith('_'):
+                if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
                     os.chdir(root)
     
                     spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
@@ -52,6 +52,7 @@ class Filesystem:
                         else:
                             self.config_ref[key] = {file_name:file_config[key]}
                             self.config_ref[key]['CONFIG_TYPE'] = type(file_config[key])()
+
 
 
 
