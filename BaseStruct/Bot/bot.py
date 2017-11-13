@@ -64,7 +64,7 @@ class Bot(ConfigCreator):
     def message_handler(self, message, edit):
         """Receives messages, parses them, 
             and sends them to the command handler"""
-        if not message.content.startswith(self.command_char):
+        if (not message.content.startswith(self.command_char)) or (message.channel.id not in self.channels):
             return
 
         if self.config['Main']['chain commands'] == 'True':
