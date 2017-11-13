@@ -23,15 +23,13 @@ class FormattedCommand:
 
         return size >= self.command.arglen
 
+    def get_description(self):
+        """returns a description of the command"""
+        return self.command.description
 
-    def get_description(self, channel, roles): # TODO REDUNDANT lookups
-        """returns the description of the command in a specific channel"""
-        if channel in self.command.description_ref:
-            for role in self.command.description_ref[channel]:
-                if role in roles:
-                    return self.command.description_ref[channel][role]
-            return self.command.description_ref[channel]['description']
-        return self.command.description_ref['description']
+    def get_usage(self):
+        """returns the raw string for the usage of the command"""
+        return self.command.usage_string
 
     def get_aliases(self):
         """returns the aliases of the command"""
