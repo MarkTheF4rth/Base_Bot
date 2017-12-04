@@ -2,6 +2,9 @@ import os
 from StorageClasses import context
 from Initialise.config_creator import ConfigCreator
 
+FOUNDATION_DESCRIPTION = 'The foundation of the Bot, which all modules are built off of.' 
+FOUNDATION_CREDITS = 'Created by @MII#0255 (<https://github.com/MarkTheF4rth/Base_Bot>)'
+
 class Bot(ConfigCreator):
     def __init__(self, client, extension_dict, filesystem):
         self.filesystem = filesystem
@@ -17,6 +20,7 @@ class Bot(ConfigCreator):
         self.data_dir = os.getcwd()+'/Data/'
         self.config_dir = os.getcwd()+'/Configs/'
         self.command_dir = os.getcwd()+'/CommandModules/'
+        self.module_info = {'Foundation':(FOUNDATION_DESCRIPTION, FOUNDATION_CREDITS)}
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def resolve_external(self, external_dict, thread_loop):
