@@ -1,4 +1,4 @@
-import json, os, importlib, copy
+import json, os, importlib, copy, sys
 
 class Filesystem:
     """Deals with reading, writing, and editting files not part of Base_Bot"""
@@ -17,11 +17,13 @@ class Filesystem:
             for script in files:
                 if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
                     os.chdir(root)
+                    sys.path.insert(0, os.getcwd())
     
                     spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
                     foo = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(foo)
     
+                    del(sys.path[0])
                     os.chdir(homedir)
 
 
