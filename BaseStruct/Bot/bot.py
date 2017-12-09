@@ -96,7 +96,7 @@ class Bot(ConfigCreator):
                 print('Processed message from: {} with roles:{} in channel:{} ... message:{}'.format(message.author, [role.name for role in accepted_roles], message.channel,  message.content))
                 ctx = context.Context()
                 ctx.accepted_roles = accepted_roles
-                ctx.message_content = content[1:]
+                ctx.set_message_content(content[1:], command.command.usage)
                 command(self, message, ctx)
                 break
 

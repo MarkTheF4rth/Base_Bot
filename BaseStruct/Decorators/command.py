@@ -10,6 +10,7 @@ def command(aliases=[], description=None, category='Default', usage=[('', '...')
             self.description = description
             self.category = category
             self.roles = []
+            self.usage = usage
             self.arglen, self.usage_string = self.usage_interpreter(usage)
     
             self.run = function
