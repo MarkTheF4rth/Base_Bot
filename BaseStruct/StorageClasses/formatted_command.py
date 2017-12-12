@@ -15,7 +15,7 @@ class FormattedCommand:
     def validate_length(self, size):
         """Check that the amount of parameters are either more than the 
             minimum or between the minimum and maximum"""
-        if self.command.arglen < 0:
+        if self.command.arglen == -1:
             return True
 
         if type(self.command.arglen) is tuple:
