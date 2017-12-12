@@ -19,7 +19,7 @@ class FormattedCommand:
             return True
 
         if type(self.command.arglen) is tuple:
-            return self.command.arglen[0] <= size <= self.arglen[1]
+            return self.command.arglen[0] <= size <= self.command.arglen[1]
 
         return size >= self.command.arglen
 
