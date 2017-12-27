@@ -4,7 +4,7 @@ from StorageClasses.channel import Channel
 from StorageClasses.formatted_command import FormattedCommand
 
 class ConfigCreator:
-    """A class which reads takes in json configs and puts 
+    """A class which reads takes in json configs and puts
         them in a format readable by the bot"""
     def __init__(self, client):
         self.client = client
@@ -43,7 +43,7 @@ class ConfigCreator:
 
 
     def format_categories(self, command_dict):
-        """formats categories and the  commands 
+        """formats categories and the  commands
             inside them to a more easily readable format"""
         categories = {category:[] for category in self.config['Categories']}
         for category_name, category_config in self.config['Categories'].items():
@@ -56,9 +56,9 @@ class ConfigCreator:
     def format_servers(self, server_configs):
         """adds the correct command with the desired presets to each channel"""
         channels = {}
-        for server_id, server_config in server_configs.items():
+        for server_name, server_config in server_configs.items():
             server_config = self.merge_configs(server_config, self.default_server_config)
-            server = self.client.get_server(server_id)
+            server = self.client.get_guild(server_config['id'])
             for channel in server.channels:
                 if channel.id in server_config['channels']:
                     merged_config = self.merge_configs(server_config['channels'][channel.id], server_config)
@@ -79,10 +79,10 @@ class ConfigCreator:
             channel_commands.update(self.categories[category])
 
         return({channel.id:Channel(channel.id, channel_commands)})
-                
+
 
     def merge_configs(self, primary_config, fallback_config):
-        """merges a fallback config into a given config, 
+        """merges a fallback config into a given config,
             filling any gaps in keys the primary config may have"""
 
         primary_config = copy.copy(primary_config) # prevent effects on given configs

@@ -12,9 +12,9 @@ async def main_loop(bot, thread_loop):
         while bot.running:
             bot.command_handler()
             for message in bot.out_messages:
-                await send_message(CLIENT, *message)
+                await send_message(*message)
                 bot.out_messages.pop(0)
-    
+
             while bot.pending_tasks:
                 task = bot.pending_tasks.pop(0)
                 await task[0](bot, *task[1], **task[2])
@@ -22,7 +22,7 @@ async def main_loop(bot, thread_loop):
 
         bot.set_configs()
         bot.running = True
-    
+
 
 if __name__ == '__main__':
     CLIENT = discord.Client() # Creating client

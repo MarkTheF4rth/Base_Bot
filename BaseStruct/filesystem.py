@@ -18,11 +18,11 @@ class Filesystem:
                 if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
                     os.chdir(root)
                     sys.path.insert(0, os.getcwd())
-    
+
                     spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
                     foo = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(foo)
-    
+
                     del(sys.path[0])
                     os.chdir(homedir)
 
@@ -32,13 +32,13 @@ class Filesystem:
             verification and defaulting optional keys"""
         with open('BaseStruct/ConfigTemplates/Default_Server.json') as server_file:
             self.default_server_config = json.load(server_file)
-    
+
         with open('BaseStruct/ConfigTemplates/Default_Category.json') as category_file:
             self.default_category_config = json.load(category_file)
 
 
     def load_external_configs(self):
-        """loads json configs from the configs folder and sorts 
+        """loads json configs from the configs folder and sorts
             their keys for easy reference"""
 
         self.config_ref = {}
@@ -89,7 +89,7 @@ class Filesystem:
 
 
     def edit_channel(self, channel, action, key, value):
-        """given a channel, edits the necessary config file 
+        """given a channel, edits the necessary config file
             using a given action and a given value"""
         file_name = self.get_key_origin('Servers', channel.server.id)
         with open('Configs/'+file_name) as config_file:

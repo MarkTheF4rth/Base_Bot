@@ -6,6 +6,7 @@
     "Required" : [],
 
     "optional" : {
+        "id" : 0,
         "channels" : {},
         "categories" : ["Default"]
     }

@@ -2,9 +2,9 @@ import asyncio
 
 max_msg_size = 1500
 
-async def send_message(client, channel_str, message_str, header='', msg_break='', recur_depth=1):
-    """Parses and sends messages via recursion, if the message is larger 
-        than allowed, will parse it into send-able chunks, with the given 
+async def send_message(channel, message_str, header='', msg_break='', recur_depth=1):
+    """Parses and sends messages via recursion, if the message is larger
+        than allowed, will parse it into send-able chunks, with the given
         "msg_break" at the top of the next sent message"""
     if not message_str:
         return
@@ -24,12 +24,12 @@ async def send_message(client, channel_str, message_str, header='', msg_break=''
             message_head += '```'
             message_tail = '```' + message_tail
 
-        await really_send_message(client, channel_str, message_head)
-        await send_message(client, channel_str, message_tail, msg_break, msg_break, recur_depth+1)
+        await really_send_message(channel, message_head)
+        await send_message(channel, message_tail, msg_break, msg_break, recur_depth+1)
 
     else:
-        return await really_send_message(client, channel_str, header+message_str)
+        return await really_send_message(channel, header+message_str)
 
-async def really_send_message(client, channel_str, message_str):
+async def really_send_message(channel, message_str):
     """Awaits the parsed message, sending it to discord"""
-    return await client.send_message(channel_str, message_str)
+    return await channel.send(message_str)
