@@ -89,9 +89,9 @@ class Bot(ConfigCreator):
             command, accepted_roles = channel.get_command(content[0], message.author.roles)
 
             if accepted_roles:
-                par_ref, output = command.validate_input(content[1:])
-                if not par_ref:
-                    self.message_printer(output, message.channel)
+                par_ref, error = command.validate_input(content[1:])
+                if error:
+                    self.message_printer(error, message.channel)
                     break
 
                 print('Processed message from: {} with roles:{} in channel:{} ... message:{}'.format(message.author, [role.name for role in accepted_roles], message.channel,  message.content))

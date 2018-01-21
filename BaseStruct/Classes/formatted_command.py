@@ -33,11 +33,10 @@ class FormattedCommand:
             otherwise returns None"""
 
         usage = self.command.usage
-        print(usage)
         parameter_track = {} # tracks what arguments each parameter is assigned
 
         if not usage: # command has no required usage
-            return True
+            return input_string, None
 
         argument_counter = 0 # track amount of arguments passed for this parameter
         parameter_counter = 0
