@@ -1,6 +1,7 @@
 from Initialise.initialise import add_command
+import re
 
-def command(aliases=[], description=None, category='Default', usage=[('', '...')]):
+def command(aliases=[], description=None, category='Default', usage=[['']]):
     class command_struct(object):
         """Stores information about a specific command"""
         def __init__(self, function):
@@ -10,41 +11,61 @@ def command(aliases=[], description=None, category='Default', usage=[('', '...')
             self.description = description
             self.category = category
             self.roles = []
-            self.usage = usage
-            self.arglen, self.usage_string = self.usage_interpreter(usage)
-    
+            self.raw_usage = usage
+            self.usage_string, self.usage = self.usage_interpreter(usage)
+
             self.run = function
 
         def usage_interpreter(self, usage):
             """Intereprets given usage parameter into readable text"""
 
-            required_flag = 0
-            usage_list = []
-            arglen = -1
+            # match symbols to descriptions
+            symref = {
+                    ''  : "{} args",
+                    '-' : "",
+                    '_' : "",
+                    '?' : "optional",
+                    '<' : "less than {} args",
+                    '>' : "more than {} args",
+                    '=<': "less or equal to {} args",
+                    '=>': "more or equal to {} args",
+                    'i' : "integer"}
 
-            for item in usage: # build usage string through every command
-                if item[1] == '?':
-                    usage_list.append('<{} (optional)>'.format(item[0]))
+            usage_list = [] # list of descriptions
+            compact_operands = [] # better compiled usage list for future calculations
 
-                elif item[1] == '...':
-                    if item[0]: # do not add empty strings to the end of usage messages
-                        usage_list.append('<{} (multiple)>'.format(item[0]))
-                    break # mult argument should always be the last one
+            for item in usage:
+                if item[0]: # don't process empty strings
+                    operand_description_list = []
+                    operands = {'name':item[0], 'length':('=', 1), 'operands':[]}
 
-                else:
-                    required_flag += 1
-                    usage_list.append('<{}>'.format(item[0]))
 
-            usage_string = ','.join(usage_list)
+                    for operand in item[1:]:
+                        numeric = re.match(r'([<>=]{,2})([0-9]*)', operand)
+                        if any(numeric.groups()):
+                            operand_description_list.append(symref[numeric.group(1)].format(numeric.group(2)))
+                            sign = numeric.group(1)
+                            if not sign:
+                                sign = '='
 
-            if usage[-1][1] == '...':
-                if required_flag:
-                    arglen = required_flag
+                            operands['length'] = (sign, int(numeric.group(2)))
 
-            else:
-                arglen = (required_flag, len(usage))
+                        else:
+                            operand_description_list.append(symref[operand])
+                            operands['operands'].append(operand)
 
-            return arglen, usage_string
+                            if operand == '?': # optional arguments have a required length of 0
+                                operands['length'] = ('=', 0)
+
+                    if operand_description_list:
+                        usage_list.append('<{} ({})>'.format(item[0], '|'.join(operand_description_list)))
+
+                    else:
+                        usage_list.append('<{}>'.format(item[0]))
+
+                    compact_operands.append(operands)
+
+            return ','.join(usage_list), compact_operands
 
 
         def __call__(self, *args, **kwargs):

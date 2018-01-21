@@ -2,7 +2,7 @@ import os
 from StorageClasses import context
 from Initialise.config_creator import ConfigCreator
 
-FOUNDATION_DESCRIPTION = 'The foundation of the Bot, which all modules are built off of.' 
+FOUNDATION_DESCRIPTION = 'The foundation of the Bot, which all modules are built off of.'
 FOUNDATION_CREDITS = 'Created by @MII#0255 (<https://github.com/MarkTheF4rth/Base_Bot>)'
 
 class Bot(ConfigCreator):
@@ -24,7 +24,7 @@ class Bot(ConfigCreator):
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 
     def resolve_external(self, external_dict, thread_loop):
-        """Resolves external commands, functions, 
+        """Resolves external commands, functions,
             and tasks, to add them to self"""
         ConfigCreator.__init__(self, self.client)
         self.commands = external_dict['command']
@@ -44,7 +44,7 @@ class Bot(ConfigCreator):
         print('\n')
 
     def resolve_tasks(self, task_dict, thread_loop):
-        """Resolves adding external tasks, verifying 
+        """Resolves adding external tasks, verifying
             that they can be added first"""
         self.thread_loop = thread_loop
         print('Resolving tasks:')
@@ -66,7 +66,7 @@ class Bot(ConfigCreator):
             print('------{} initialised'.format(name))
 
     def message_handler(self, message, edit):
-        """Receives messages, parses them, 
+        """Receives messages, parses them,
             and sends them to the command handler"""
         if (not message.content.startswith(self.command_char)) or (message.channel.id not in self.channels):
             return
@@ -89,14 +89,13 @@ class Bot(ConfigCreator):
             command, accepted_roles = channel.get_command(content[0], message.author.roles)
 
             if accepted_roles:
-                if not command.validate_length(len(content)-1):
-                    self.message_printer('Please use a valid amount of arguments for this comand', message.channel)
+                par_ref, output = command.validate_input(content[1:])
+                if not par_ref:
+                    self.message_printer(output, message.channel)
                     break
 
                 print('Processed message from: {} with roles:{} in channel:{} ... message:{}'.format(message.author, [role.name for role in accepted_roles], message.channel,  message.content))
-                ctx = context.Context()
-                ctx.accepted_roles = accepted_roles
-                ctx.set_message_content(content[1:], command.command.usage)
+                ctx = context.Context(accepted_roles, content[1:], par_ref)
                 command(self, message, ctx)
                 break
 

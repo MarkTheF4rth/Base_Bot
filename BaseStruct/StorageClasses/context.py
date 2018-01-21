@@ -1,26 +1,13 @@
 class Context:
-    def __init__(self):
-        self.accepted_roles = []
-        self.message_content = {} # dict of parameter:value
-        self.raw_message_content = [] # list of command parameters
+    def __init__(self, roles, content, sorted_content):
+        '''create a context object, given content and roles'''
+        self.accepted_roles = roles
+        self.message_content = sorted_content # dictionary of arguments and the parameters they apply to
+        self.raw_message_content = content # list of command parameters
 
-    def set_message_content(self, content, usage):
-        '''Sets the message content, based on what content there is, 
-            and how the command should be used for easy referencing'''
-        place_counter = 0
-
-        self.raw_message_content = content
-
-        for use_type in usage:
-            if use_type[1] == '...':
-                if self.message_content:
-                    self.message_content[use_type[0]] = content[place_counter:]
-
-                else:
-                    self.message_content = self.raw_message_content
-
-                break
-
-            self.message_content[use_type[0]] = content[place_counter]
-            place_counter += 1
-
+#    def set_message_content(self, split_content, split_content):
+#        '''Sets the message content, based on what content there is,
+#            and how the command should be used for easy referencing'''
+#
+#        self.raw_message_content = content
+#        self.message_content = split_content
