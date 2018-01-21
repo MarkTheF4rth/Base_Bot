@@ -4,7 +4,7 @@ import importlib.util
 sys.path.insert(0, os.getcwd())
 sys.path.insert(0, os.getcwd()+'/BaseStruct')
 
-from Bot.message_sender import send_message
+from Scripts.message_sender import send_message
 from Initialise.initialise import Master_Initialise
 
 async def main_loop(bot, thread_loop):

@@ -1,5 +1,5 @@
 import os
-from StorageClasses import context
+from Classes import context
 from Initialise.config_creator import ConfigCreator
 
 FOUNDATION_DESCRIPTION = 'The foundation of the Bot, which all modules are built off of.'

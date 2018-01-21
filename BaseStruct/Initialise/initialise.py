@@ -2,13 +2,14 @@ import os, asyncio
 from collections import OrderedDict
 from Initialise.verify import Verify
 from Initialise.add_event_listeners import add_event_listeners
-from filesystem import Filesystem
-from Bot.bot import Bot
+from Classes.filesystem import Filesystem
+from Classes.bot import Bot
 import importlib.util
 
 EXTENSION_DICT = {'task':{}, 'command':OrderedDict({'ALL_COMMANDS':{}}), 'func':{}}
 TRUE_CASE = ['TRUE', 'True', 'true', '1', 'yes']
 FALSE_CASE = ['FALSE', 'False', 'false', '0', 'no']
+DEFAULT_CONFIG_PATH = os.getcwd()+'/BaseStruct/Initialise/DefaultConfigs/'
 
 def extend_bot(func, f_type):
     """Adds a given function to a local dictionary"""
@@ -21,15 +22,15 @@ def add_command(function, category):
     else:
         EXTENSION_DICT['command'][category] = function
     EXTENSION_DICT['command']['ALL_COMMANDS'].update(function)
-    
+
 
 async def Master_Initialise(client, main_loop, thread_loop):
-    """Runs all initialisation scripts in the correct order, 
+    """Runs all initialisation scripts in the correct order,
          running the main thread loop when it finishes"""
     print('='*10+'BEGINNING INIT'+'='*10)
 
     verify = Verify()
-    filesystem = Filesystem()
+    filesystem = Filesystem(DEFAULT_CONFIG_PATH)
     if not verify.stage_one(): # first verification stage
         print('One or more critical failures arose, exiting...')
         return

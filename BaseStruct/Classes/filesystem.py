@@ -2,8 +2,9 @@ import json, os, importlib, copy, sys
 
 class Filesystem:
     """Deals with reading, writing, and editting files not part of Base_Bot"""
-    def __init__(self):
+    def __init__(self, default_config_path):
         """intialises by importing all external configs and libraries"""
+        self.default_config_path = default_config_path # path to templates for default config values
         self.load_default_configs()
         self.load_external_configs()
 
@@ -30,10 +31,10 @@ class Filesystem:
     def load_default_configs(self):
         """loads the default configs that are used for
             verification and defaulting optional keys"""
-        with open('BaseStruct/ConfigTemplates/Default_Server.json') as server_file:
+        with open(self.default_config_path+'Default_Server.json') as server_file:
             self.default_server_config = json.load(server_file)
 
-        with open('BaseStruct/ConfigTemplates/Default_Category.json') as category_file:
+        with open(self.default_config_path+'/Default_Category.json') as category_file:
             self.default_category_config = json.load(category_file)
 
 
