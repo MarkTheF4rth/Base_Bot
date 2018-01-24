@@ -35,6 +35,8 @@ def command(aliases=[], description=None, category='Default', usage=[['']]):
             compact_operands = [] # better compiled usage list for future calculations
 
             for item in usage:
+                if type(item) == str: # allow parameters without operands
+                    item = (item, '')
                 if item[0]: # don't process empty strings
                     operand_description_list = []
                     operands = {'name':item[0], 'length':('=', 1), 'operands':[]}

@@ -1,7 +1,7 @@
 import discord, asyncio, sys, os
 import importlib.util
 
-sys.path.insert(0, os.getcwd())
+sys.path.pop(0) # replace working directory with Base Struct dir for consistency
 sys.path.insert(0, os.getcwd()+'/BaseStruct')
 
 from Scripts.message_sender import send_message

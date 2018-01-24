@@ -1,5 +1,5 @@
 def listen(client, main):
-    """Listens for when messages are editted in discord, 
+    """Listens for when messages are editted in discord,
         sends them to the message handler"""
 
     @client.event

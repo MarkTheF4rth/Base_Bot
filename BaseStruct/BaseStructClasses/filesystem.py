@@ -9,24 +9,40 @@ class Filesystem:
         self.load_external_configs()
 
 
-    def import_libs(self):
-        """Recursively import visible python scripts in the command modules"""
-        homedir = os.getcwd()
-        startdir = homedir+'/CommandModules'
-        for root, dirs, files in os.walk(startdir):
+    def import_libs(self, module_path, home):
+        """Recursively and iteratively import visible python scripts in the command modules
+        if intialise.py is found as a file, it will assume that file is contained within a module"""
+        path_list = [] # paths of all imported scripts
+        cutoff = None # determines path
+        added = '' # last path added to syspath
+
+        for root, dirs, files in os.walk(module_path):
             dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('_')]
+            if not cutoff or cutoff == root: # insert syspath if no cutoff is available
+                if added: # remove anything added to the sys path
+                    sys.path.remove(added)
+
+                sys.path.insert(0, root)
+                added = root
+
+            os.chdir(root)
             for script in files:
                 if not script.startswith('.') and not script.startswith('_') and script.endswith('.py'):
-                    os.chdir(root)
-                    sys.path.insert(0, os.getcwd())
 
                     spec = importlib.util.spec_from_file_location(script.rstrip('.py'), os.path.join(root, script))
                     foo = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(foo)
 
-                    del(sys.path[0])
-                    os.chdir(homedir)
+                    path_list.append(script)
 
+            os.chdir(home)
+
+
+            if 'initialise.py' in files:
+                cutoff = root
+
+        sys.path.remove(added) # remove final path
+        return path_list
 
     def load_default_configs(self):
         """loads the default configs that are used for

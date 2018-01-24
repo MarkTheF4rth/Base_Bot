@@ -1,7 +1,7 @@
 import os, json, discord, copy
 from collections import OrderedDict
-from Classes.channel import Channel
-from Classes.formatted_command import FormattedCommand
+from BaseStructClasses.channel import Channel
+from BaseStructClasses.formatted_command import FormattedCommand
 
 class ConfigCreator:
     """A class which reads takes in json configs and puts

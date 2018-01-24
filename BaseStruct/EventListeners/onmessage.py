@@ -1,4 +1,4 @@
-def listen (client, main):
+def listen(client, main):
     """Sends a recieved message to the message handler"""
 
     @client.event
