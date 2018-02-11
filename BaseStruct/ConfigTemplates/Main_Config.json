@@ -1,0 +1,30 @@
+THIS IS NOT A VALID CONFIG
+
+{
+    "Main": {
+        "chain commands": true, 
+        "command character": "!"
+    },
+    "Servers": {
+        "Test": {
+            "id": 1234567890,
+            "categories" : [ "Default" ],
+            "channels": {
+                "channel1": {
+                    "id": 1234567890,
+                    "categories": [ "GoodBot" ]
+                    ]
+                }
+            }
+        }
+    },
+    "Categories": {
+        "Default": {
+            "display": true/false,
+            "roles": ["@everyone"],
+            "pm_help": true/false,
+            "commands": ["confirm", "help"],
+            "subcategories": ["GoodBot"]
+        }
+    }
+}
