@@ -71,7 +71,7 @@ class Bot(ConfigCreator):
         if (not message.content.startswith(self.command_char)) or (message.channel.id not in self.channels):
             return
 
-        if self.config['Main']['chain commands'] == 'True':
+        if self.config['Main']['chain commands']:
             content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
         else:
             content = [message.content[1:].split()]
