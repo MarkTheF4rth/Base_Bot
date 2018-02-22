@@ -72,7 +72,7 @@ class Bot(ConfigCreator):
             return
 
         if self.config['Main']['chain commands']:
-            content = [a.split() for a in message.content.split(self.raw_config['Main']['command char'])[1:]]
+            content = [a.split() for a in message.content.split(self.config['Main']['command character'])[1:]]
         else:
             content = [message.content[1:].split()]
 
