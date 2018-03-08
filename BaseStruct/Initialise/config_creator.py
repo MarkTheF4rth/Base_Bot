@@ -56,9 +56,10 @@ class ConfigCreator:
     def format_servers(self, server_configs):
         """adds the correct command with the desired presets to each channel"""
         channels = {}
-        for server_name, server_config in server_configs.items():
+        for server_id, server_config in server_configs.items():
+            server_id = int(server_id)
             server_config = self.merge_configs(server_config, self.default_server_config)
-            server = self.client.get_guild(server_config['id'])
+            server = self.client.get_guild(server_id)
             for channel in server.channels:
                 if channel.id in server_config['channels']:
                     merged_config = self.merge_configs(server_config['channels'][channel.id], server_config)

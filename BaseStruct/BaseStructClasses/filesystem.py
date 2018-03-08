@@ -2,8 +2,9 @@ import json, os, importlib, copy, sys
 
 class Filesystem:
     """Deals with reading, writing, and editting files not part of Base_Bot"""
-    def __init__(self, default_config_path):
+    def __init__(self, default_config_path, home_dir):
         """intialises by importing all external configs and libraries"""
+        self.home_dir = home_dir # location of run.py
         self.default_config_path = default_config_path # path to templates for default config values
         self.load_default_configs()
         self.load_external_configs()
@@ -60,9 +61,9 @@ class Filesystem:
 
         self.config_ref = {}
 
-        for file_name in os.listdir('Configs'):
+        for file_name in os.listdir(self.home_dir+'/Configs'):
             if file_name.endswith('.json'):
-                with open('Configs/'+file_name) as config_file:
+                with open(self.home_dir+'/Configs/'+file_name) as config_file:
                     file_config = json.load(config_file)
 
                     for key in file_config:
@@ -108,25 +109,28 @@ class Filesystem:
     def edit_channel(self, channel, action, key, value):
         """given a channel, edits the necessary config file
             using a given action and a given value"""
-        file_name = self.get_key_origin('Servers', channel.server.id)
-        with open('Configs/'+file_name) as config_file:
+        server_id = str(channel.guild.id)
+        channel_id = str(channel.id) # json has to work with the channel ID as a string
+        file_name = self.get_key_origin('Servers', server_id)
+
+        with open(self.home_dir+'/Configs/'+file_name) as config_file:
             temp_dict = json.load(config_file)
-            server = temp_dict['Servers'][channel.server.id]
+            server = temp_dict['Servers'][server_id]
             if 'channels' not in server:
                 server['channels'] = {}
 
-            if channel.id not in ['channels']: # make sure there is a channel to edit
-                val = copy.copy(temp_dict['Servers'][channel.server.id][key])
-                temp_dict['Servers'][channel.server.id]['channels'][channel.id] = {key : val}
+            if channel_id not in ['channels']: # make sure there is a channel to edit
+                val = copy.copy(temp_dict['Servers'][server_id][key])
+                temp_dict['Servers'][server_id]['channels'][channel_id] = {key : val}
 
             if action == 'append':
-                server['channels'][channel.id][key].append(value)
+                server['channels'][channel_id][key].append(value)
 
-            elif action == 'remove' and value in server['channels'][channel.id][key]:
-                server['channels'][channel.id][key].remove(value)
+            elif action == 'remove' and value in server['channels'][channel_id][key]:
+                server['channels'][channel_id][key].remove(value)
 
 
-        with open('Configs/'+file_name, 'w') as config_file:
+        with open(self.home_dir+'/Configs/'+file_name, 'w') as config_file:
             json.dump(temp_dict, config_file, sort_keys=True, indent=4, separators=(',', ': '))
 
         self.load_external_configs()

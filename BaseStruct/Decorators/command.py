@@ -27,8 +27,8 @@ def command(aliases=[], description=None, category='Default', usage=[['']]):
                     '?' : "optional",
                     '<' : "less than {} args",
                     '>' : "more than {} args",
-                    '=<': "less or equal to {} args",
-                    '=>': "more or equal to {} args",
+                    '<=': "less or equal to {} args",
+                    '>=': "more or equal to {} args",
                     'i' : "integer"}
 
             usage_list = [] # list of descriptions

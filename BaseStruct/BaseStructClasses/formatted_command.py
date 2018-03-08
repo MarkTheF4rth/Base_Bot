@@ -19,7 +19,8 @@ class FormattedCommand:
         # create operand identities
         self.identities = {
                 'i'  : (lambda x : x.isdigit()),
-                '?'  : (lambda x : True)
+                '?'  : (lambda x : True),
+                ''   : (lambda x : True)
                 }
 
     def set_config(self, config):
@@ -56,6 +57,11 @@ class FormattedCommand:
                     return None, '\n'.join([self.command.usage_string, msg])
 
             if length_check and parameter_counter < len(usage)-1: # move onto next parameter if possible
+
+                # if arg length is only 1, don't use a list
+                if len(parameter_track[parameter['name']]) == 1:
+                    parameter_track[parameter['name']] = parameter_track[parameter['name']][0]
+
                 argument_counter = 0
                 parameter_counter += 1
                 parameter = usage[parameter_counter]
@@ -67,6 +73,7 @@ class FormattedCommand:
             msg = 'Please use the correct amount of arguments for this command'
             return None, '\n'.join([self.command.usage_string, msg])
 
+        parameter_track = {x:(y[0] if len(y) == 1 else y) for x, y in parameter_track.items()}
         return parameter_track, None
 
 

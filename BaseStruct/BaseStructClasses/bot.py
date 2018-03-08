@@ -16,10 +16,10 @@ class Bot(ConfigCreator):
         self.running = True
         self.client = client
         self.commands = []
-        self.home_dir = os.getcwd()+'/'
-        self.data_dir = os.getcwd()+'/Data/'
-        self.config_dir = os.getcwd()+'/Configs/'
-        self.command_dir = os.getcwd()+'/CommandModules/'
+        self.home_dir = self.filesystem.home_dir
+        self.data_dir = self.home_dir+'/Data/'
+        self.config_dir = self.home_dir+'/Configs/'
+        self.command_dir = self.home_dir+'/CommandModules/'
         self.module_info = {'Foundation':(FOUNDATION_DESCRIPTION, FOUNDATION_CREDITS)}
         self.tasks = {'call':{}, 'init':{}, 'onmessage':{}, 'oncommand':{}}
 

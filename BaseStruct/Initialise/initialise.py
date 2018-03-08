@@ -26,13 +26,13 @@ def add_command(function, category):
     EXTENSION_DICT['command']['ALL_COMMANDS'].update(function)
 
 
-async def Master_Initialise(client, main_loop, thread_loop):
+async def Master_Initialise(client, main_loop, thread_loop, home_dir):
     """Runs all initialisation scripts in the correct order,
          running the main thread loop when it finishes"""
     print('='*10+'BEGINNING INIT'+'='*10)
 
     verify = Verify()
-    filesystem = Filesystem(DEFAULT_CONFIG_PATH)
+    filesystem = Filesystem(DEFAULT_CONFIG_PATH, home_dir)
     if not verify.stage_one(): # first verification stage
         print('One or more critical failures arose, exiting...')
         return

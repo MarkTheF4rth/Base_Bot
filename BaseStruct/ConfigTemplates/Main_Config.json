@@ -10,8 +10,7 @@ THIS IS NOT A VALID CONFIG
             "id": 1234567890,
             "categories" : [ "Default" ],
             "channels": {
-                "channel1": {
-                    "id": 1234567890,
+                "1234567": {
                     "categories": [ "GoodBot" ]
                     ]
                 }

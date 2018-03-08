@@ -1,4 +1,4 @@
-# Discord-Bot-Base-Structure V 3.0.0
+# Discord-Bot-Base-Structure V 3.0.1
 Serves as a bridge between the Discord API and various scripts to handle bot functions in Discord
 
 Dependancies:
@@ -26,11 +26,10 @@ All fields in this section are required, they will dictate the general behaviour
 "chain commands" - allows multiple commands to be passed in a single message, if the command character comes up more than once, recommended for simple bots with less complex commnads
 
 Servers:
-This section controls what servers/channels the bot can respond in, all fields in this section are a server name followed by a dictionary, see template for details.
+This section controls what servers/channels the bot can respond in, all fields in this section are a server id followed by a dictionary, see template for details.
 Every server has the following fields:
-"id" - the identification number of the server
 "categories" - the command categories which are enabled in the server
-"channels" - a subset of server, used to set configs specifically for channels within the server
+"channels" - a subset of server, used to set configs specifically for channels within the server, it behaves identical to server, without a "channels" field
 
 Categories:
 All commands are sorted into categories, generally by the module they belong to. In this section you can set the behaviour of each category, and what commands they hold.

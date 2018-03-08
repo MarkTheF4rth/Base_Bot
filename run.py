@@ -28,10 +28,11 @@ if __name__ == '__main__':
     CLIENT = discord.Client() # Creating client
     LOOP = asyncio.get_event_loop() # Create event loop for asyncio threads
     INPUT = sys.argv[1:] # Save command line input that does not include the filename
+    HOME = os.path.realpath(os.path.dirname(__file__)) # location of run.py
 
     token = open('token.txt').readlines()[0].strip() # Grab token from file
 
-    LOOP.create_task(Master_Initialise(CLIENT, main_loop, LOOP)) # Run the initialiser
+    LOOP.create_task(Master_Initialise(CLIENT, main_loop, LOOP, HOME)) # Run the initialiser
 
     CLIENT.run(token) # Run the bot with given token
     CLIENT.connect() # Connect to discord
