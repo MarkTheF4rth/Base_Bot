@@ -61,8 +61,10 @@ class ConfigCreator:
             server_config = self.merge_configs(server_config, self.default_server_config)
             server = self.client.get_guild(server_id)
             for channel in server.channels:
-                if channel.id in server_config['channels']:
-                    merged_config = self.merge_configs(server_config['channels'][channel.id], server_config)
+                channel_id  = str(channel.id) # use string value for comparisons
+                if channel_id in server_config['channels']:
+                    print(channel)
+                    merged_config = self.merge_configs(server_config['channels'][channel_id], server_config)
                     new_channel = self.format_channel(channel, merged_config)
 
                 else:
