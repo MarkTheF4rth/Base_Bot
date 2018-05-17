@@ -116,12 +116,16 @@ class Filesystem:
         with open(self.home_dir+'/Configs/'+file_name) as config_file:
             temp_dict = json.load(config_file)
             server = temp_dict['Servers'][server_id]
+            print(server)
             if 'channels' not in server:
+                print('channels don\'t exist')
                 server['channels'] = {}
 
-            if channel_id not in ['channels']: # make sure there is a channel to edit
+            if channel_id not in server['channels']: # make sure there is a channel to edit
                 val = copy.copy(temp_dict['Servers'][server_id][key])
                 temp_dict['Servers'][server_id]['channels'][channel_id] = {key : val}
+
+            print('before', server['channels'])
 
             if action == 'append':
                 server['channels'][channel_id][key].append(value)
@@ -129,6 +133,7 @@ class Filesystem:
             elif action == 'remove' and value in server['channels'][channel_id][key]:
                 server['channels'][channel_id][key].remove(value)
 
+            print('after', server['channels'])
 
         with open(self.home_dir+'/Configs/'+file_name, 'w') as config_file:
             json.dump(temp_dict, config_file, sort_keys=True, indent=4, separators=(',', ': '))
