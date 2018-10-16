@@ -100,11 +100,11 @@ class Bot(ConfigCreator):
                 break
 
 
-    def message_printer(self, message, channel, header='', msg_break=''):
+    def message_printer(self, message, channel, header='', footer='', msg_break=''):
         """Adds a given message to the print queue"""
         if channel == 'hub':
             channel = self.hub_channel
-        self.out_messages.append([channel, message, header, msg_break])
+        self.out_messages.append([channel, message, header, footer, msg_break])
 
     def call_task(self, task, *args, **kwargs):
         """Calls a given task with the given arguments"""
